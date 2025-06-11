@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.farm"
+    namespace = "com.farm.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.farm"
+        applicationId = "com.farm.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
