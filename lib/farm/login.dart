@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../admin/dash.dart';
+import 'notify.dart';
 
 class EmailLoginPage extends StatefulWidget {
   const EmailLoginPage({super.key});
@@ -46,7 +47,11 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
     } on FirebaseAuthException catch (e) {
       _handleAuthError(e);
     } catch (e) {
-      _setError('Login failed: ${e.toString()}');
+      NotificationBar.show(
+        context: context,
+        message: e.toString(),
+        isError: true,
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -57,7 +62,11 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
   Future<void> _redirectUser(String? uid) async {
     if (uid == null) {
       debugPrint('[DEBUG] Authentication succeeded but UID is null');
-      _setError('User authentication failed');
+      NotificationBar.show(
+        context: context,
+        message: 'Authentication failed. Please try again.',
+        isError: true,
+      );
       return;
     }
 
@@ -149,9 +158,10 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
         message = 'Too many attempts. Try again later.';
         break;
       default:
-        message = 'Login failed: ${e.message}';
+        message = 'Authentication failed: ${e.message}';
+        NotificationBar.show(context: context, message: message, isError: true);
     }
-    _setError(message);
+    NotificationBar.show(context: context, message: message, isError: true);
   }
 
   void _setError(String message) {

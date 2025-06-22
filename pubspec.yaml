@@ -18,6 +18,9 @@ dependencies:
   internet_connection_checker: ^1.0.0
   async: ^2.11.0
   pedantic: ^1.11.1
+  geolocator: ^10.0.0
+  http: ^0.13.5
+  intl: ^0.18.1
 
 
 dev_dependencies:

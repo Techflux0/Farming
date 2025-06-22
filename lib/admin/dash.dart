@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'users.dart';
+import 'home.dart';
+import 'livestock.dart';
+import 'crop.dart';
+import '../farm/weather.dart';
+import 'market.dart';
+import 'profile.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -14,9 +21,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
     const AdminHomeScreen(),
     const LivestockManagementScreen(),
     const CropManagementScreen(),
-    const WeatherDataScreen(),
+    const WeatherPage(),
     const MarketManagementScreen(),
-    const AdminProfileScreen(),
+    const UserManagementPage(),
+    const ProfilePage(),
   ];
 
   @override
@@ -42,64 +50,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
             icon: Icon(Icons.shopping_cart),
             label: 'Market',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Users'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
-  }
-}
-
-// Placeholder screens for each tab
-class AdminHomeScreen extends StatelessWidget {
-  const AdminHomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Admin Home'));
-  }
-}
-
-class LivestockManagementScreen extends StatelessWidget {
-  const LivestockManagementScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Livestock Management'));
-  }
-}
-
-class CropManagementScreen extends StatelessWidget {
-  const CropManagementScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Crop Management'));
-  }
-}
-
-class WeatherDataScreen extends StatelessWidget {
-  const WeatherDataScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Weather Data'));
-  }
-}
-
-class MarketManagementScreen extends StatelessWidget {
-  const MarketManagementScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Market Management'));
-  }
-}
-
-class AdminProfileScreen extends StatelessWidget {
-  const AdminProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Admin Profile'));
   }
 }
