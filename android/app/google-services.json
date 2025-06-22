@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1026545670025",
+    "project_id": "farm-535d5",
+    "storage_bucket": "farm-535d5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1026545670025:android:ccf7e663863ecdb4017358",
+        "android_client_info": {
+          "package_name": "com.farm.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWMHeNUrbEI1erb_W0Nqd2x9FuHJKUuok"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
