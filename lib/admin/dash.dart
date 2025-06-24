@@ -5,7 +5,7 @@ import 'livestock.dart';
 import 'crop.dart';
 import '../farm/weather.dart';
 import 'market.dart';
-import 'profile.dart';
+import '../farm/profile.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});

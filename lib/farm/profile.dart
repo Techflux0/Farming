@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../farm/notify.dart';
+import 'notify.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
