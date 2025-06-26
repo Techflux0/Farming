@@ -288,7 +288,7 @@ class _HomeLandingPageState extends State<HomeLandingPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      ...faqs.map((faq) => FAQDropdown(faq: faq)).toList(),
+                      ...faqs.map((faq) => FAQDropdown(faq: faq)),
                     ],
                   ),
                 ),
@@ -518,17 +518,6 @@ class _FAQDropdownState extends State<FAQDropdown> {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            child: Text(
-              widget.faq.answer,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-            ),
-          ),
-        ],
         onExpansionChanged: (expanded) {
           setState(() {
             _isExpanded = expanded;
@@ -541,6 +530,17 @@ class _FAQDropdownState extends State<FAQDropdown> {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Text(
+              widget.faq.answer,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
