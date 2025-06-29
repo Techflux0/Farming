@@ -248,6 +248,24 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  //logout button
+  Widget _buildLogoutButton() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ElevatedButton(
+        onPressed: () async {
+          await FirebaseAuth.instance.signOut();
+          Navigator.of(context).pushReplacementNamed('/login');
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red[700],
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        child: const Text('Logout'),
+      ),
+    );
+  }
+
   Widget _buildUserInfoSection() {
     return Column(
       children: [
