@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SecureSignUpPage extends StatefulWidget {
@@ -22,6 +23,7 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
   bool _obscureConfirmPassword = true;
   String? _errorMessage;
   String? _selectedRole = 'member';
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<void> _signUpWithEmail() async {
     if (!_formKey.currentState!.validate()) return;
@@ -44,29 +46,7 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
           )
           .timeout(const Duration(seconds: 30));
 
-      final user = userCredential.user;
-      if (user == null) throw Exception('User creation failed');
-
-      final userData = {
-        'uid': user.uid,
-        'email': user.email ?? _emailController.text.trim(),
-        'fullname': _nameController.text.trim(),
-        'role': _selectedRole,
-        'age': null,
-        'primary_phone': null,
-        'secondary_phone': null,
-        'address': null,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .set(userData);
-
-      if (!mounted) return;
-      _showSuccessDialog(user.uid);
+      await _saveUserData(userCredential.user!);
     } on FirebaseAuthException catch (e) {
       _handleAuthError(e);
     } on FirebaseException catch (e) {
@@ -74,12 +54,69 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
     } on TimeoutException {
       _setError('Connection timed out. Please try again.');
     } catch (e) {
-      _setError('Unexpected error: ${e.toString()}');
+      _setError('Unexpected error occurred. Please try again.');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credential);
+      await _saveUserData(userCredential.user!);
+    } on FirebaseAuthException catch (e) {
+      _handleAuthError(e);
+    } on FirebaseException catch (e) {
+      _handleFirestoreError(e);
+    } catch (e) {
+      _setError('Error signing in with Google. Please try again.');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _saveUserData(User user) async {
+    final userData = {
+      'uid': user.uid,
+      'email': user.email ?? _emailController.text.trim(),
+      'fullname': _nameController.text.trim(),
+      'role': _selectedRole,
+      'membership_status': 'pending',
+      'age': null,
+      'primary_phone': null,
+      'secondary_phone': null,
+      'address': null,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .set(userData);
+
+    if (!mounted) return;
+    _showSuccessDialog(user.uid);
   }
 
   void _handleAuthError(FirebaseAuthException e) {
@@ -98,7 +135,7 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
         message = 'Password is too weak. Use at least 6 characters.';
         break;
       default:
-        message = 'Authentication failed: ${e.message}';
+        message = 'Authentication failed. Please try again.';
     }
     _setError(message);
   }
@@ -116,7 +153,7 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
         message = 'Resource limit reached. Try again later.';
         break;
       default:
-        message = 'Database error: ${e.message}';
+        message = 'Database error occurred. Please try again.';
     }
     _setError(message);
   }
@@ -139,8 +176,6 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Your account has been created successfully.'),
-            const SizedBox(height: 10),
-            Text('User ID: $userId', style: const TextStyle(fontSize: 12)),
             const SizedBox(height: 10),
             Text(
               'Role: $_selectedRole',
@@ -170,14 +205,17 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text('Create Account'),
         backgroundColor: Colors.green[700],
+        elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
+            const SizedBox(height: 20),
             Image.asset('assets/scafold/sprout.png', height: 60),
             const SizedBox(height: 20),
             const Text(
@@ -188,10 +226,11 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
                 color: Colors.green,
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             if (_errorMessage != null)
               Container(
                 padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: Colors.red[50],
                   borderRadius: BorderRadius.circular(8),
@@ -210,150 +249,236 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
                   ],
                 ),
               ),
-            const SizedBox(height: 20),
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Full Name',
-                      prefixIcon: Icon(Icons.person),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) => value?.isEmpty ?? true
-                        ? 'Please enter your name'
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!RegExp(
-                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                      ).hasMatch(value)) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Full Name',
+                          prefixIcon: const Icon(Icons.person),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
                         ),
-                        onPressed: () => setState(
-                          () => _obscurePassword = !_obscurePassword,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your full name';
+                          }
+                          if (value.trim().split(' ').length < 2) {
+                            return 'Please enter at least first and last name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          prefixIcon: const Icon(Icons.email),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          if (!RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          ).hasMatch(value)) {
+                            return 'Please enter a valid email';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: const Icon(Icons.lock),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a password';
+                          }
+                          if (value.length < 6) {
+                            return 'Password must be at least 6 characters';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: _obscureConfirmPassword,
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Password',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () => setState(
+                              () => _obscureConfirmPassword =
+                                  !_obscureConfirmPassword,
+                            ),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
                         ),
                       ),
-                      border: const OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _confirmPasswordController,
-                    obscureText: _obscureConfirmPassword,
-                    decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _selectedRole,
+                        decoration: InputDecoration(
+                          labelText: 'Account Type',
+                          prefixIcon: const Icon(Icons.group),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
                         ),
-                        onPressed: () => setState(
-                          () => _obscureConfirmPassword =
-                              !_obscureConfirmPassword,
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'member',
+                            child: Text('Community Member'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'farmer',
+                            child: Text('Farmer'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'veterinary',
+                            child: Text('Veterinary Professional'),
+                          ),
+                        ],
+                        onChanged: (value) =>
+                            setState(() => _selectedRole = value),
+                        validator: (value) =>
+                            value == null ? 'Please select a role' : null,
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _signUpWithEmail,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[700],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text(
+                                  'Create Account',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _selectedRole,
-                    decoration: const InputDecoration(
-                      labelText: 'Account Type',
-                      prefixIcon: Icon(Icons.group),
-                      border: OutlineInputBorder(),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'member',
-                        child: Text('Community Member'),
-                      ),
-                      DropdownMenuItem(value: 'farmer', child: Text('Farmer')),
-                      DropdownMenuItem(
-                        value: 'veterinary',
-                        child: Text('Veterinary Professional'),
+                      const SizedBox(height: 16),
+                      const Text('OR', style: TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton(
+                          onPressed: _isLoading ? null : _signInWithGoogle,
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.grey),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/scafold/google.png',
+                                height: 24,
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'Continue with Google',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
-                    onChanged: (value) => setState(() => _selectedRole = value),
-                    validator: (value) =>
-                        value == null ? 'Please select a role' : null,
                   ),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _signUpWithEmail,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              'Create Account',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Divider(),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'By signing up, you agree to our Terms of Service and Privacy Policy',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
+                ),
               ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'By signing up, you agree to our Terms of Service and Privacy Policy',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ],
         ),
