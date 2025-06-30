@@ -258,20 +258,39 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                     ),
                                     Row(
                                       children: [
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.edit,
-                                            color: Colors.grey,
-                                          ),
+                                        TextButton(
                                           onPressed: () => _editLivestock(doc),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.cleaning_services,
-                                            color: Colors.grey,
+                                          child: const Text('Edit'),
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Colors.green[700],
+                                            side: BorderSide(
+                                              color: Colors.green[700]!,
+                                              width: 1.5,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
                                           ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        ElevatedButton(
                                           onPressed: () =>
                                               _deleteLivestock(doc.id),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.green[700],
+                                            foregroundColor: Colors.black,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 8,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            elevation: 0,
+                                          ),
+                                          child: const Text('Delete'),
                                         ),
                                       ],
                                     ),
