@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../admin/dash.dart';
 import 'notify.dart';
 import '../farmer/dash.dart';
+import '../vet/dash.dart';
 
 class EmailLoginPage extends StatefulWidget {
   const EmailLoginPage({super.key});
@@ -165,7 +166,11 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
           );
           break;
         case 'veterinary':
-          Navigator.pushReplacementNamed(context, '/vet-dashboard');
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const VetDashboard()),
+            (route) => false,
+          );
           break;
         case 'member':
           Navigator.pushReplacementNamed(context, '/member-home');
