@@ -12,8 +12,8 @@ class _UserManagementPageState extends State<UserManagementPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  // ignore: unused_field
   bool _isLoading = false;
+  final Map<String, bool> _expandedUsers = {};
 
   @override
   void dispose() {
@@ -28,13 +28,24 @@ class _UserManagementPageState extends State<UserManagementPage> {
         'role': newRole,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('User role updated to $newRole')));
+      _showSnackBar('User role updated to $newRole');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating role: ${e.toString()}')),
-      );
+      _showSnackBar('Error updating role: ${e.toString()}', isError: true);
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _approveUser(String userId) async {
+    setState(() => _isLoading = true);
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'membership_status': 'approved',
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      _showSnackBar('User approved successfully');
+    } catch (e) {
+      _showSnackBar('Error approving user: ${e.toString()}', isError: true);
     } finally {
       setState(() => _isLoading = false);
     }
@@ -44,62 +55,78 @@ class _UserManagementPageState extends State<UserManagementPage> {
     setState(() => _isLoading = true);
     try {
       await _firestore.collection('users').doc(userId).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User deleted successfully')),
-      );
+      _showSnackBar('User deleted successfully');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting user: ${e.toString()}')),
-      );
+      _showSnackBar('Error deleting user: ${e.toString()}', isError: true);
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  void _toggleExpandUser(String userId) {
+    setState(() {
+      _expandedUsers[userId] = !(_expandedUsers[userId] ?? false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('User Management'),
-        backgroundColor: Colors.green[700],
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => setState(() {}),
-          ),
-        ],
-      ),
+      backgroundColor: Colors.grey[100],
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                labelText: 'Search users',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() => _searchQuery = '');
-                  },
+            child: Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    labelText: 'Search users',
+                    hintText: 'Search by email or name',
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    border: InputBorder.none,
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.grey),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
+                  ),
+                  onChanged: (value) => setState(() => _searchQuery = value),
                 ),
               ),
-              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _searchQuery.isEmpty
-                  ? _firestore.collection('users').snapshots()
+                  ? _firestore
+                        .collection('users')
+                        .orderBy('createdAt', descending: true)
+                        .snapshots()
                   : _firestore
                         .collection('users')
                         .where('email', isGreaterThanOrEqualTo: _searchQuery)
                         .where('email', isLessThan: '${_searchQuery}z')
+                        .orderBy('email')
                         .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -107,11 +134,35 @@ class _UserManagementPageState extends State<UserManagementPage> {
                 }
 
                 if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(
+                    child: Text(
+                      'Error loading users',
+                      style: TextStyle(color: Colors.red[700]),
+                    ),
+                  );
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('No users found'));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.people_alt,
+                          size: 60,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No users found',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 return ListView.builder(
@@ -123,78 +174,163 @@ class _UserManagementPageState extends State<UserManagementPage> {
                     final email = userData['email'] ?? 'No email';
                     final role = userData['role'] ?? 'member';
                     final name = userData['fullname'] ?? 'Unknown';
+                    final status = userData['membership_status'] ?? 'pending';
+                    final createdAt = (userData['createdAt'] as Timestamp?)
+                        ?.toDate();
+                    final isExpanded = _expandedUsers[userId] ?? false;
 
                     return Card(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 16.0,
                         vertical: 8.0,
                       ),
-                      child: ListTile(
-                        title: Text(name),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(email),
-                            const SizedBox(height: 4),
-                            Text('Role: $role'),
-                          ],
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: ExpansionTile(
+                        key: Key(userId),
+                        initiallyExpanded: isExpanded,
+                        onExpansionChanged: (expanded) =>
+                            _toggleExpandUser(userId),
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.green[100],
+                          child: Icon(
+                            _getRoleIcon(role),
+                            color: Colors.green[700],
+                          ),
                         ),
-                        trailing: PopupMenuButton<String>(
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'admin',
-                              child: Text('Make Admin'),
+                        title: Text(
+                          name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Text(
+                          email,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                        trailing: _buildStatusBadge(status),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
                             ),
-                            const PopupMenuItem(
-                              value: 'farmer',
-                              child: Text('Make Farmer'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'veterinary',
-                              child: Text('Make Veterinary'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'member',
-                              child: Text('Make Member'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text(
-                                'Delete User',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
-                          onSelected: (value) {
-                            if (value == 'delete') {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Confirm Delete'),
-                                  content: Text('Delete user $email?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        _deleteUser(userId);
-                                      },
-                                      child: const Text(
-                                        'Delete',
-                                        style: TextStyle(color: Colors.red),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildDetailRow('Role', role),
+                                _buildDetailRow('Status', status),
+                                if (createdAt != null)
+                                  _buildDetailRow(
+                                    'Joined',
+                                    '${createdAt.day}/${createdAt.month}/${createdAt.year}',
+                                  ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    if (status == 'pending')
+                                      ElevatedButton(
+                                        onPressed: () => _approveUser(userId),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Approve',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
                                       ),
+                                    DropdownButton<String>(
+                                      value: role,
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      elevation: 16,
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                      ),
+                                      underline: Container(
+                                        height: 2,
+                                        color: Colors.green,
+                                      ),
+                                      onChanged: (String? newValue) {
+                                        if (newValue != null) {
+                                          _updateUserRole(userId, newValue);
+                                        }
+                                      },
+                                      items:
+                                          <String>[
+                                            'admin',
+                                            'farmer',
+                                            'veterinary',
+                                            'member',
+                                          ].map<DropdownMenuItem<String>>((
+                                            String value,
+                                          ) {
+                                            return DropdownMenuItem<String>(
+                                              value: value,
+                                              child: Text(
+                                                value.toUpperCase(),
+                                                style: TextStyle(
+                                                  color: _getRoleColor(value),
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: const Text('Confirm Delete'),
+                                            content: Text(
+                                              'Delete user $email?',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(context),
+                                                child: const Text('Cancel'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                  _deleteUser(userId);
+                                                },
+                                                child: const Text(
+                                                  'Delete',
+                                                  style: TextStyle(
+                                                    color: Colors.red,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
                                     ),
                                   ],
                                 ),
-                              );
-                            } else {
-                              _updateUserRole(userId, value);
-                            }
-                          },
-                        ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -205,5 +341,88 @@ class _UserManagementPageState extends State<UserManagementPage> {
         ],
       ),
     );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[700],
+            ),
+          ),
+          Text(value, style: TextStyle(color: Colors.grey[600])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    Color backgroundColor;
+    Color textColor;
+    String displayStatus;
+
+    switch (status) {
+      case 'approved':
+        backgroundColor = Colors.green[100]!;
+        textColor = Colors.green[800]!;
+        displayStatus = 'Approved';
+        break;
+      case 'pending':
+        backgroundColor = Colors.orange[100]!;
+        textColor = Colors.orange[800]!;
+        displayStatus = 'Pending';
+        break;
+      default:
+        backgroundColor = Colors.grey[200]!;
+        textColor = Colors.grey[800]!;
+        displayStatus = status;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        displayStatus,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  IconData _getRoleIcon(String role) {
+    switch (role) {
+      case 'admin':
+        return Icons.admin_panel_settings;
+      case 'farmer':
+        return Icons.agriculture;
+      case 'veterinary':
+        return Icons.medical_services;
+      default:
+        return Icons.person;
+    }
+  }
+
+  Color _getRoleColor(String role) {
+    switch (role) {
+      case 'admin':
+        return Colors.purple;
+      case 'farmer':
+        return Colors.green;
+      case 'veterinary':
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
   }
 }

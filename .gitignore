@@ -11,6 +11,10 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+*.fetch-client
+*.lock
+*.lockfile
+*.vscode
 
 
 *.iml

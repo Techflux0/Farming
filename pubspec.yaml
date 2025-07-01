@@ -32,7 +32,7 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: false
-  image_path: "assets/launcher/xyz.png"
+  image_path: "assets/launcher/sprout.png"
 
 flutter:
   uses-material-design: true

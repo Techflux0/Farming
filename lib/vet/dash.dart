@@ -1,29 +1,27 @@
 import 'package:flutter/material.dart';
-import 'users.dart';
 import 'home.dart';
-import 'livestock.dart';
-import 'crop.dart';
+import 'animals.dart';
+import 'crops.dart';
 import '../farm/weather.dart';
-import 'market.dart';
+import 'payment.dart';
 import '../farm/profile.dart';
 
-class AdminDashboard extends StatefulWidget {
-  const AdminDashboard({super.key});
+class VetDashboard extends StatefulWidget {
+  const VetDashboard({super.key});
 
   @override
-  State<AdminDashboard> createState() => _AdminDashboardState();
+  State<VetDashboard> createState() => _VetDashboardState();
 }
 
-class _AdminDashboardState extends State<AdminDashboard> {
+class _VetDashboardState extends State<VetDashboard> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const AdminHomeScreen(),
-    const LivestockManagementScreen(),
-    const CropManagementScreen(),
+    const VetHomeScreen(),
+    const AnimalScreen(),
+    const CropScreen(),
     const WeatherPage(),
-    const MarketManagementScreen(),
-    const UserManagementPage(),
+    const PaymentPage(),
     const ProfilePage(),
   ];
 
@@ -32,7 +30,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Admin Dashboard'),
+        title: const Text('Veterinary'),
         backgroundColor: Colors.green[700],
       ),
       body: _screens[_currentIndex],
@@ -44,14 +42,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Livestock'),
+          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Animals'),
           BottomNavigationBarItem(icon: Icon(Icons.spa), label: 'Crops'),
           BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Market',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Users'),
+          BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payments'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
