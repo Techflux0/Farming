@@ -222,9 +222,8 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
                       prefixIcon: Icon(Icons.person),
                       border: OutlineInputBorder(),
                     ),
-                    validator: (value) => value?.isEmpty ?? true
-                        ? 'Please enter your name'
-                        : null,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Please enter your name' : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -260,9 +259,8 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
                               ? Icons.visibility
                               : Icons.visibility_off,
                         ),
-                        onPressed: () => setState(
-                          () => _obscurePassword = !_obscurePassword,
-                        ),
+                        onPressed: () => setState(() =>
+                            _obscurePassword = !_obscurePassword),
                       ),
                       border: const OutlineInputBorder(),
                     ),
@@ -289,10 +287,9 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
                               ? Icons.visibility
                               : Icons.visibility_off,
                         ),
-                        onPressed: () => setState(
-                          () => _obscureConfirmPassword =
-                              !_obscureConfirmPassword,
-                        ),
+                        onPressed: () => setState(() =>
+                            _obscureConfirmPassword =
+                                !_obscureConfirmPassword),
                       ),
                       border: const OutlineInputBorder(),
                     ),
@@ -310,11 +307,15 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
                         value: 'member',
                         child: Text('Community Member'),
                       ),
-                      DropdownMenuItem(value: 'farmer', child: Text('Farmer')),
+                      DropdownMenuItem(
+                        value: 'farmer',
+                        child: Text('Farmer'),
+                      ),
                       DropdownMenuItem(
                         value: 'veterinary',
                         child: Text('Veterinary Professional'),
                       ),
+                      
                     ],
                     onChanged: (value) => setState(() => _selectedRole = value),
                     validator: (value) =>

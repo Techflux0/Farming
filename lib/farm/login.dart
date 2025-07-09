@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../admin/dash.dart';
 import 'notify.dart';
+import '../treasuree/treasurer_dashboard.dart';
 
 class EmailLoginPage extends StatefulWidget {
   const EmailLoginPage({super.key});
@@ -123,6 +124,13 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
           break;
         case 'member':
           Navigator.pushReplacementNamed(context, '/member-home');
+          break;
+          case 'treasurer':
+                    Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const TreasurerDashboard()),
+            (route) => false,
+          );
           break;
         default:
           debugPrint('[DEBUG] Unknown role, redirecting to home');
