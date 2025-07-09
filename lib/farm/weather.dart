@@ -134,18 +134,8 @@ class _WeatherPageState extends State<WeatherPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Weather Forecast'),
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      backgroundColor: Colors.blue.shade50,
+      backgroundColor: Colors.grey[100],
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage.isNotEmpty
@@ -154,7 +144,7 @@ class _WeatherPageState extends State<WeatherPage> {
                 padding: const EdgeInsets.all(20),
                 child: Text(
                   _errorMessage,
-                  style: theme.textTheme.bodyLarge?.copyWith(color: Colors.red),
+                  style: TextStyle(color: Colors.red[700], fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -166,23 +156,45 @@ class _WeatherPageState extends State<WeatherPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Header with location and refresh button
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Weather Forecast',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green[800],
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.refresh, color: Colors.green[700]),
+                            onPressed: () => _getCurrentLocation(),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     // Current Weather Card
                     if (_currentWeather != null)
                       Card(
-                        elevation: 4,
+                        elevation: 2,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        color: Colors.white,
                         child: Padding(
                           padding: const EdgeInsets.all(20),
                           child: Column(
                             children: [
                               Text(
-                                'Current Weather',
-                                style: theme.textTheme.titleLarge?.copyWith(
+                                _currentWeather!['name'] ?? 'Current Location',
+                                style: TextStyle(
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blue.shade800,
+                                  color: Colors.green[700],
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -198,7 +210,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                     style: TextStyle(
                                       fontSize: 48,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.blue.shade900,
+                                      color: Colors.green[800],
                                     ),
                                   ),
                                 ],
@@ -208,46 +220,43 @@ class _WeatherPageState extends State<WeatherPage> {
                                 _currentWeather!['weather'][0]['description']
                                     .toString()
                                     .toUpperCase(),
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: Colors.blue.shade700,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.green[700],
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    _weatherDetail(
-                                      Icons.water_drop,
-                                      '${_currentWeather!['main']['humidity']}%',
-                                      'Humidity',
-                                      Colors.blue,
-                                    ),
-                                    const SizedBox(width: 20),
-                                    _weatherDetail(
-                                      Icons.air,
-                                      '${_currentWeather!['wind']['speed']?.round()} km/h',
-                                      'Wind',
-                                      Colors.blue,
-                                    ),
-                                    const SizedBox(width: 20),
-                                    _weatherDetail(
-                                      Icons.compress,
-                                      '${_currentWeather!['main']['pressure']} hPa',
-                                      'Pressure',
-                                      Colors.blue,
-                                    ),
-                                    const SizedBox(width: 20),
-                                    _weatherDetail(
-                                      Icons.visibility,
-                                      '${_currentWeather!['visibility'] / 1000} km',
-                                      'Visibility',
-                                      Colors.blue,
-                                    ),
-                                  ],
-                                ),
+                              GridView.count(
+                                shrinkWrap: true,
+                                crossAxisCount: 2,
+                                childAspectRatio: 3,
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: [
+                                  _weatherDetail(
+                                    Icons.water_drop,
+                                    '${_currentWeather!['main']['humidity']}%',
+                                    'Humidity',
+                                    Colors.green,
+                                  ),
+                                  _weatherDetail(
+                                    Icons.air,
+                                    '${_currentWeather!['wind']['speed']?.round()} km/h',
+                                    'Wind',
+                                    Colors.green,
+                                  ),
+                                  _weatherDetail(
+                                    Icons.compress,
+                                    '${_currentWeather!['main']['pressure']} hPa',
+                                    'Pressure',
+                                    Colors.green,
+                                  ),
+                                  _weatherDetail(
+                                    Icons.visibility,
+                                    '${_currentWeather!['visibility'] / 1000} km',
+                                    'Visibility',
+                                    Colors.green,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -258,9 +267,10 @@ class _WeatherPageState extends State<WeatherPage> {
                     // Hourly Forecast
                     Text(
                       'Hourly Forecast',
-                      style: theme.textTheme.titleLarge?.copyWith(
+                      style: TextStyle(
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade800,
+                        color: Colors.green[800],
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -278,7 +288,7 @@ class _WeatherPageState extends State<WeatherPage> {
                               width: 100,
                               margin: const EdgeInsets.only(right: 8),
                               child: Card(
-                                elevation: 2,
+                                elevation: 1,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -291,7 +301,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                         _formatTime(forecast['dt']),
                                         style: TextStyle(
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.blue.shade800,
+                                          color: Colors.green[800],
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -303,7 +313,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                         '${forecast['main']['temp']?.round()}°C',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.blue.shade900,
+                                          color: Colors.green[800],
                                         ),
                                       ),
                                     ],
@@ -319,9 +329,10 @@ class _WeatherPageState extends State<WeatherPage> {
                     // Daily Forecast
                     Text(
                       'Daily Forecast',
-                      style: theme.textTheme.titleLarge?.copyWith(
+                      style: TextStyle(
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade800,
+                        color: Colors.green[800],
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -331,7 +342,7 @@ class _WeatherPageState extends State<WeatherPage> {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             child: Card(
-                              elevation: 2,
+                              elevation: 1,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -345,22 +356,22 @@ class _WeatherPageState extends State<WeatherPage> {
                                     Expanded(
                                       child: Text(
                                         _formatDate(daily['dt']),
-                                        style: theme.textTheme.titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.blue.shade800,
-                                            ),
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.green[800],
+                                        ),
                                       ),
                                     ),
                                     _weatherIcon(daily['weather'][0]['icon']),
                                     const SizedBox(width: 16),
                                     Text(
                                       '${daily['temp']['max']?.round()}° / ${daily['temp']['min']?.round()}°',
-                                      style: theme.textTheme.titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.blue.shade900,
-                                          ),
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green[800],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -379,9 +390,7 @@ class _WeatherPageState extends State<WeatherPage> {
   List<dynamic> _getDailyForecast() {
     if (_forecast == null || _forecast!.isEmpty) return [];
 
-    // Group forecasts by day and get daily min/max temps
     Map<String, dynamic> dailyForecasts = {};
-
     for (var forecast in _forecast!) {
       final date = DateFormat(
         'yyyy-MM-dd',
@@ -408,10 +417,7 @@ class _WeatherPageState extends State<WeatherPage> {
       }
     }
 
-    // Convert to list and skip today (index 0)
     var dailyList = dailyForecasts.values.toList();
-
-    // Return up to 6 days, but don't exceed the available data
     return dailyList.length > 1
         ? dailyList.sublist(1, dailyList.length > 6 ? 7 : dailyList.length)
         : [];
@@ -423,24 +429,31 @@ class _WeatherPageState extends State<WeatherPage> {
     String label,
     Color color,
   ) {
-    return Column(
-      children: [
-        Icon(icon, size: 28, color: color),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: color,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 24, color: color),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: color,
+                ),
+              ),
+              Text(
+                label,
+                style: TextStyle(fontSize: 14, color: color.withOpacity(0.7)),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: color.withOpacity(0.7)),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
