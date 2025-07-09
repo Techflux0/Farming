@@ -4,6 +4,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../admin/dash.dart';
 import 'notify.dart';
+import '../farmer/dash.dart';
+import '../vet/dash.dart';
 
 class EmailLoginPage extends StatefulWidget {
   const EmailLoginPage({super.key});
@@ -173,17 +175,10 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
         case 'member':
           Navigator.pushReplacementNamed(context, '/member-home');
           break;
-          case 'treasurer':
-                    Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const TreasurerDashboard()),
-            (route) => false,
-          );
-          break;
         default:
           Navigator.pushReplacementNamed(context, '/home');
       }
-    } on FirebaseException catch (e) {
+    } on FirebaseException {
       _setError('Failed to load user profile. Please try again.');
     } catch (e) {
       _setError('An unexpected error occurred');
