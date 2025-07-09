@@ -5,7 +5,6 @@ class NotificationBar {
   static OverlayEntry? _overlayEntry;
   static Timer? _timer;
   static const String _logoAssetPath = 'assets/scafold/sprout.png';
-
   static void show({
     required BuildContext context,
     required String message,
@@ -49,7 +48,6 @@ class NotificationBar {
                 bottom: false,
                 child: Row(
                   children: [
-                    // Logo on the left (using predefined path)
                     Padding(
                       padding: const EdgeInsets.only(right: 12),
                       child: Image.asset(
@@ -87,7 +85,6 @@ class NotificationBar {
 
     overlayState.insert(_overlayEntry!);
 
-    // Auto-dismiss after duration
     _timer = Timer(Duration(seconds: durationSeconds), dismiss);
   }
 
