@@ -260,7 +260,6 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                       children: [
                                         TextButton(
                                           onPressed: () => _editLivestock(doc),
-                                          child: const Text('Edit'),
                                           style: TextButton.styleFrom(
                                             foregroundColor: Colors.green[700],
                                             side: BorderSide(
@@ -272,6 +271,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                                   BorderRadius.circular(8),
                                             ),
                                           ),
+                                          child: const Text('Edit'),
                                         ),
                                         const SizedBox(width: 8),
                                         ElevatedButton(

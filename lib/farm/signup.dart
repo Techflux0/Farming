@@ -81,7 +81,19 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
 
       final UserCredential userCredential = await FirebaseAuth.instance
           .signInWithCredential(credential);
-      await _saveUserData(userCredential.user!);
+
+      final user = userCredential.user!;
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (userDoc.exists) {
+        // User document already exists, show dialog or proceed as needed
+        _showSuccessDialog(user.uid);
+      } else {
+        await _saveUserData(user);
+      }
     } on FirebaseAuthException catch (e) {
       _handleAuthError(e);
     } on FirebaseException catch (e) {
@@ -100,12 +112,12 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
       'uid': user.uid,
       'email': user.email ?? _emailController.text.trim(),
       'fullname': _nameController.text.trim(),
-      'role': _selectedRole,
+      'roles': [_selectedRole, "null"],
       'membership_status': 'pending',
-      'age': null,
-      'primary_phone': null,
-      'secondary_phone': null,
-      'address': null,
+      'age': 'null',
+      'primary_phone': 'null',
+      'secondary_phone': 'null',
+      'address': 'null',
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     };

@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:share_plus/share_plus.dart';
 
 class MinutesHomeScreen extends StatefulWidget {
-  const MinutesHomeScreen({Key? key}) : super(key: key);
+  const MinutesHomeScreen({super.key});
 
   @override
   _MinutesHomeScreenState createState() => _MinutesHomeScreenState();
@@ -129,8 +129,8 @@ class _MinutesHomeScreenState extends State<MinutesHomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _createMinuteDialog,
-        child: const Icon(Icons.add),
         tooltip: 'Create New Minute',
+        child: const Icon(Icons.add),
       ),
     );
   }

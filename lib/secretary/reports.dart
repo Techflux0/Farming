@@ -4,7 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 class ReportsHomeScreen extends StatefulWidget {
-  const ReportsHomeScreen({Key? key}) : super(key: key);
+  const ReportsHomeScreen({super.key});
 
   @override
   _ReportsHomeScreenState createState() => _ReportsHomeScreenState();
@@ -54,7 +54,7 @@ class _ReportsHomeScreenState extends State<ReportsHomeScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -125,8 +125,8 @@ class _ReportsHomeScreenState extends State<ReportsHomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showReportDialog,
-        child: const Icon(Icons.add),
         tooltip: 'Generate Report',
+        child: const Icon(Icons.add),
       ),
     );
   }

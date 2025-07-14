@@ -147,11 +147,25 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
         return;
       }
 
-      final role = userData['role'] as String? ?? 'member';
+      final roles =
+          (userData['roles'] as List?)?.whereType<String>().toList() ?? [];
 
+      if (roles.isEmpty) {
+        _setError('No role assigned to your account');
+        return;
+      }
+
+      String selectedRole = roles[0];
+
+      // If there's a second non-null role, ask user to choose
+      if (roles.length > 1 && roles[1] != null && roles[1]!.isNotEmpty) {
+        selectedRole = await _showRoleSelectionDialog(roles) ?? roles[0];
+      }
+
+      // Route based on selected role
       if (!mounted) return;
 
-      switch (role) {
+      switch (selectedRole) {
         case 'admin':
           Navigator.pushAndRemoveUntil(
             context,
@@ -173,17 +187,6 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
             (route) => false,
           );
           break;
-        case 'member':
-          Navigator.pushReplacementNamed(context, '/member-home');
-          break;
-        // case 'treasurer':
-        //   Navigator.pushAndRemoveUntil(
-        //     context,
-        //     MaterialPageRoute(builder: (context) => const TreasurerDashboard()),
-        //     (route) => false,
-        //   );
-        //   break;
-
         case 'secretary':
           Navigator.pushAndRemoveUntil(
             context,
@@ -193,7 +196,9 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
             (route) => false,
           );
           break;
-
+        case 'member':
+          Navigator.pushReplacementNamed(context, '/member-home');
+          break;
         default:
           Navigator.pushReplacementNamed(context, '/home');
       }
@@ -202,6 +207,31 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
     } catch (e) {
       _setError('An unexpected error occurred');
     }
+  }
+
+  Future<String?> _showRoleSelectionDialog(List<String> roles) async {
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Choose Login Role'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: roles
+                .where((role) => role.isNotEmpty)
+                .map(
+                  (role) => ListTile(
+                    leading: const Icon(Icons.account_circle),
+                    title: Text(role[0].toUpperCase() + role.substring(1)),
+                    onTap: () => Navigator.of(context).pop(role),
+                  ),
+                )
+                .toList(),
+          ),
+        );
+      },
+    );
   }
 
   void _handleAuthError(FirebaseAuthException e) {
