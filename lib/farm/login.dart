@@ -79,6 +79,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
+
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -88,20 +89,24 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
         credential,
       );
 
+      final String uid = userCredential.user?.uid ?? '';
+      final String email = userCredential.user?.email ?? '';
+      final String name = userCredential.user?.displayName ?? 'Google User';
+
       if (userCredential.additionalUserInfo?.isNewUser ?? false) {
-        // New user - create profile
-        await _firestore.collection('users').doc(userCredential.user?.uid).set({
-          'uid': userCredential.user?.uid,
-          'email': userCredential.user?.email,
-          'fullname': userCredential.user?.displayName ?? 'Google User',
-          'role': 'member',
+        // 🆕 New user - create profile with roles array
+        await _firestore.collection('users').doc(uid).set({
+          'uid': uid,
+          'email': email,
+          'fullname': name,
+          'roles': ['member', 'null'],
           'membership_status': 'pending',
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
       }
 
-      await _redirectUser(userCredential.user?.uid);
+      await _redirectUser(uid);
     } on FirebaseAuthException catch (e) {
       _handleAuthError(e);
     } on FirebaseException catch (e) {
@@ -157,12 +162,11 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
 
       String selectedRole = roles[0];
 
-      // If there's a second non-null role, ask user to choose
-      if (roles.length > 1 && roles[1] != null && roles[1]!.isNotEmpty) {
+      // ✅ Check if second role is a valid string and not "null"
+      if (roles.length > 1 && roles[1] != "null") {
         selectedRole = await _showRoleSelectionDialog(roles) ?? roles[0];
       }
 
-      // Route based on selected role
       if (!mounted) return;
 
       switch (selectedRole) {
@@ -219,7 +223,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: roles
-                .where((role) => role.isNotEmpty)
+                .where((role) => role != "null" && role.isNotEmpty)
                 .map(
                   (role) => ListTile(
                     leading: const Icon(Icons.account_circle),

@@ -302,7 +302,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                     _buildDetailItem(
                                       Icons.numbers,
                                       '${data['count']}',
-                                      'Count',
+                                      'ID',
                                     ),
                                     const SizedBox(width: 16),
                                     _buildDetailItem(
@@ -473,7 +473,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                               child: TextFormField(
                                 controller: _countController,
                                 decoration: InputDecoration(
-                                  labelText: 'Count',
+                                  labelText: 'ID',
                                   prefixIcon: const Icon(Icons.numbers),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),

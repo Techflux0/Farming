@@ -19,7 +19,6 @@ class _VetDashboardState extends State<VetDashboard> {
   final List<Widget> _screens = [
     const VetHomeScreen(),
     const AnimalScreen(),
-    const CropScreen(),
     const WeatherPage(),
     const PaymentPage(),
     const ProfilePage(),
@@ -43,7 +42,6 @@ class _VetDashboardState extends State<VetDashboard> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Animals'),
-          BottomNavigationBarItem(icon: Icon(Icons.spa), label: 'Crops'),
           BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
           BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payments'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),

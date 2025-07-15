@@ -31,10 +31,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       int members = 0;
 
       for (final doc in usersQuery.docs) {
-        final role = doc['role']?.toString() ?? 'member';
-        if (role == 'veterinary') vets++;
-        if (role == 'farmer') farmers++;
-        if (role == 'member') members++;
+        final roles = (doc['roles'] as List?)?.cast<String>() ?? ['member'];
+
+        if (roles.contains('veterinary')) vets++;
+        if (roles.contains('farmer')) farmers++;
+        if (roles.contains('member')) members++;
       }
 
       setState(() {
@@ -59,6 +60,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 32, color: color),
             const SizedBox(height: 8),

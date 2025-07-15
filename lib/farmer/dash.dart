@@ -19,7 +19,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   final List<Widget> _screens = [
     const FarmerHomeScreen(), // You should create a FarmerHomeScreen
     const LivestockManagementScreen(),
-    const CropManagementScreen(),
     const WeatherPage(),
     const MarketManagementScreen(),
     const ProfilePage(),
@@ -43,7 +42,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Livestock'),
-          BottomNavigationBarItem(icon: Icon(Icons.spa), label: 'Crops'),
           BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
