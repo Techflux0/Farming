@@ -26,6 +26,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
   File? _selectedImage;
   bool _loading = false;
   String _searchQuery = '';
+  String? _editingDrugId;
 
   // Form controllers
   final TextEditingController _nameController = TextEditingController();
@@ -111,11 +112,23 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
     }
   }
 
-  Future<void> _addDrug() async {
-    if (_nameController.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please enter drug name')));
+  Future<void> _addOrUpdateDrug() async {
+    if (_nameController.text.isEmpty ||
+        _priceController.text.isEmpty ||
+        _quantityController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all required fields')),
+      );
+      return;
+    }
+
+    if (double.tryParse(_priceController.text) == null ||
+        int.tryParse(_quantityController.text) == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter valid numbers for price and quantity'),
+        ),
+      );
       return;
     }
 
@@ -125,37 +138,87 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
       final user = _auth.currentUser;
 
       if (user != null) {
-        await _firestore.collection('drugs').add({
+        final drugData = {
           'name': _nameController.text,
           'description': _descriptionController.text,
           'category': _selectedCategory,
           'dosage': _dosageController.text,
-          'price': double.tryParse(_priceController.text) ?? 0.0,
-          'quantity': int.tryParse(_quantityController.text) ?? 0,
-          'imageUrl': imageUrl,
+          'price': double.parse(_priceController.text),
+          'quantity': int.parse(_quantityController.text),
           'farmerId': user.uid,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
+
+        // Add image URL if available (keep existing if editing and no new image)
+        if (imageUrl != null) {
+          drugData['imageUrl'] = imageUrl;
+        }
+
+        if (_editingDrugId == null) {
+          // Add new drug
+          drugData['createdAt'] = FieldValue.serverTimestamp();
+          await _firestore.collection('drugs').add(drugData);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Drug added successfully')),
+          );
+        } else {
+          // Update existing drug
+          await _firestore
+              .collection('drugs')
+              .doc(_editingDrugId)
+              .update(drugData);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Drug updated successfully')),
+          );
+        }
 
         // Clear form
-        _nameController.clear();
-        _descriptionController.clear();
-        _dosageController.clear();
-        _priceController.clear();
-        _quantityController.clear();
-        setState(() => _selectedImage = null);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Drug added successfully')),
-        );
+        _clearForm();
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error adding drug: $e')));
+      ).showSnackBar(SnackBar(content: Text('Error saving drug: $e')));
     } finally {
       setState(() => _loading = false);
     }
+  }
+
+  Future<void> _deleteDrug(String drugId) async {
+    try {
+      await _firestore.collection('drugs').doc(drugId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Drug deleted successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error deleting drug: $e')));
+    }
+  }
+
+  void _clearForm() {
+    _nameController.clear();
+    _descriptionController.clear();
+    _dosageController.clear();
+    _priceController.clear();
+    _quantityController.clear();
+    setState(() {
+      _selectedImage = null;
+      _editingDrugId = null;
+    });
+  }
+
+  void _loadDrugForEditing(Map<String, dynamic> drug, String drugId) {
+    _nameController.text = drug['name'];
+    _descriptionController.text = drug['description'] ?? '';
+    _dosageController.text = drug['dosage'] ?? '';
+    _priceController.text = drug['price'].toString();
+    _quantityController.text = drug['quantity'].toString();
+    _selectedCategory = drug['category'] ?? 'Antibiotic';
+    setState(() {
+      _editingDrugId = drugId;
+    });
   }
 
   Widget _buildDrugIcon(String category) {
@@ -185,7 +248,10 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _showAddDrugDialog(context),
+            onPressed: () {
+              _clearForm();
+              _showAddDrugDialog(context);
+            },
           ),
         ],
       ),
@@ -270,7 +336,10 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                         ),
                         const SizedBox(height: 8),
                         ElevatedButton(
-                          onPressed: () => _showAddDrugDialog(context),
+                          onPressed: () {
+                            _clearForm();
+                            _showAddDrugDialog(context);
+                          },
                           child: const Text('Add First Drug'),
                         ),
                       ],
@@ -283,6 +352,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                   itemBuilder: (context, index) {
                     final doc = snapshot.data!.docs[index];
                     final data = doc.data() as Map<String, dynamic>;
+                    final drugId = doc.id;
 
                     return Card(
                       margin: const EdgeInsets.symmetric(
@@ -293,31 +363,65 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.grey[200],
-                          child: _buildDrugIcon(data['category']),
-                          foregroundImage: data['imageUrl'] != null
-                              ? NetworkImage(data['imageUrl'])
-                              : null,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.grey[200],
+                                  child: _buildDrugIcon(data['category']),
+                                  foregroundImage: data['imageUrl'] != null
+                                      ? NetworkImage(data['imageUrl'])
+                                      : null,
+                                ),
+                                title: Text(
+                                  data['name'],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  '${data['category']} • ${data['quantity']} available',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                                trailing: Text(
+                                  'Kes${data['price'].toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green[700],
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                onTap: () => _showDrugDetails(context, data),
+                              ),
+                            ),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Colors.blue,
+                                  ),
+                                  onPressed: () {
+                                    _loadDrugForEditing(data, drugId);
+                                    _showAddDrugDialog(context);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () =>
+                                      _showDeleteConfirmation(context, drugId),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        title: Text(
-                          data['name'],
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          '${data['category']} • ${data['quantity']} available',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                        trailing: Text(
-                          'Kes${data['price'].toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green[700],
-                            fontSize: 16,
-                          ),
-                        ),
-                        onTap: () => _showDrugDetails(context, data),
                       ),
                     );
                   },
@@ -330,11 +434,39 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
     );
   }
 
+  Future<void> _showDeleteConfirmation(
+    BuildContext context,
+    String drugId,
+  ) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: const Text('Are you sure you want to delete this drug?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                _deleteDrug(drugId);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _showAddDrugDialog(BuildContext context) async {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add New Drug'),
+        title: Text(_editingDrugId == null ? 'Add New Drug' : 'Edit Drug'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -356,7 +488,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
               TextField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Drug Name',
+                  labelText: 'Drug Name*',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -404,7 +536,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                     child: TextField(
                       controller: _priceController,
                       decoration: const InputDecoration(
-                        labelText: 'Price (Kes)',
+                        labelText: 'Price (Kes)*',
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
@@ -415,7 +547,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                     child: TextField(
                       controller: _quantityController,
                       decoration: const InputDecoration(
-                        labelText: 'Quantity',
+                        labelText: 'Quantity*',
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
@@ -428,12 +560,26 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+              _clearForm();
+            },
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
-              await _addDrug();
+              if (_nameController.text.isEmpty ||
+                  _priceController.text.isEmpty ||
+                  _quantityController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please fill all required fields (*)'),
+                  ),
+                );
+                return;
+              }
+
+              await _addOrUpdateDrug();
               if (!mounted) return;
               Navigator.pop(context);
             },
@@ -441,7 +587,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
               backgroundColor: Colors.green[700],
               foregroundColor: Colors.white,
             ),
-            child: const Text('Add Drug'),
+            child: Text(_editingDrugId == null ? 'Add Drug' : 'Update Drug'),
           ),
         ],
       ),

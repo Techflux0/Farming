@@ -22,7 +22,7 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   String? _errorMessage;
-  String? _selectedRole = 'member';
+  String? _selectedRole = 'farmer';
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<void> _signUpWithEmail() async {
@@ -404,10 +404,6 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
                           ),
                         ),
                         items: const [
-                          DropdownMenuItem(
-                            value: 'member',
-                            child: Text('Community Member'),
-                          ),
                           DropdownMenuItem(
                             value: 'farmer',
                             child: Text('Farmer'),

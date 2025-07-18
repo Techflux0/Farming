@@ -7,6 +7,7 @@ import 'notify.dart';
 import '../farmer/dash.dart';
 import '../vet/dash.dart';
 import '../secretary/home.dart';
+import '../treasuree/dash.dart';
 
 class EmailLoginPage extends StatefulWidget {
   const EmailLoginPage({super.key});
@@ -200,8 +201,12 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
             (route) => false,
           );
           break;
-        case 'member':
-          Navigator.pushReplacementNamed(context, '/member-home');
+        case 'treasurer':
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const TreasurerDashboard()),
+            (route) => false,
+          );
           break;
         default:
           Navigator.pushReplacementNamed(context, '/home');
