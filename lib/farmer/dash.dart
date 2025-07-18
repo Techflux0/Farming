@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home.dart';
 import 'livestock.dart';
-import 'crop.dart';
 import '../farm/weather.dart';
 import 'market.dart';
 import '../farm/profile.dart';
@@ -17,7 +16,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const FarmerHomeScreen(), // You should create a FarmerHomeScreen
+    const FarmerHomeScreen(),
     const LivestockManagementScreen(),
     const WeatherPage(),
     const MarketManagementScreen(),

@@ -24,7 +24,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   Future<void> _fetchUserData() async {
     try {
-      final usersQuery = await _firestore.collection('users').get();
+      final usersQuery = await _firestore
+          .collection('users')
+          .where(
+            'roles',
+            arrayContainsAny: ['admin', 'veterinary', 'farmer', 'member'],
+          )
+          .get();
 
       int vets = 0;
       int farmers = 0;
@@ -33,9 +39,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       for (final doc in usersQuery.docs) {
         final roles = (doc['roles'] as List?)?.cast<String>() ?? ['member'];
 
-        if (roles.contains('veterinary')) vets++;
-        if (roles.contains('farmer')) farmers++;
-        if (roles.contains('member')) members++;
+        // Check the first role (since second is always "null")
+        final primaryRole = roles[0];
+
+        if (primaryRole == 'veterinary') vets++;
+        if (primaryRole == 'farmer') farmers++;
+        if (primaryRole == 'member') members++;
       }
 
       setState(() {
@@ -50,6 +59,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error loading user data: $e')));
+      debugPrint('Error details: $e');
     }
   }
 

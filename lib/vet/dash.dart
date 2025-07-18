@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'home.dart';
 import 'animals.dart';
-import 'crops.dart';
 import '../farm/weather.dart';
 import 'payment.dart';
 import '../farm/profile.dart';
+import 'drugs.dart';
 
 class VetDashboard extends StatefulWidget {
   const VetDashboard({super.key});
@@ -18,9 +18,10 @@ class _VetDashboardState extends State<VetDashboard> {
 
   final List<Widget> _screens = [
     const VetHomeScreen(),
-    const AnimalScreen(),
+    const VeterinaryLivestockPage(),
     const WeatherPage(),
     const PaymentPage(),
+    const FarmerDrugsPage(),
     const ProfilePage(),
   ];
 
@@ -44,6 +45,10 @@ class _VetDashboardState extends State<VetDashboard> {
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Animals'),
           BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
           BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payments'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.medical_services),
+            label: 'Drugs',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
