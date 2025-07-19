@@ -1,4 +1,4 @@
-# farm app
+# farm
 
 A new Flutter project.
 
