@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CommunicationHomeScreen extends StatefulWidget {
-  const CommunicationHomeScreen({Key? key}) : super(key: key);
+  const CommunicationHomeScreen({super.key});
 
   @override
   _CommunicationHomeScreenState createState() => _CommunicationHomeScreenState();

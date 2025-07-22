@@ -21,9 +21,11 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
   final TextEditingController _countController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _illnessController = TextEditingController();
 
   String _gender = 'male';
   bool _isPregnant = false;
+  bool _hasIllness = false;
   bool _isLoading = false;
   bool _showAddForm = false;
   String? _editingLivestockId;
@@ -35,6 +37,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
     _countController.dispose();
     _priceController.dispose();
     _notesController.dispose();
+    _illnessController.dispose();
     super.dispose();
   }
 
@@ -54,6 +57,8 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
         'price': double.tryParse(_priceController.text) ?? 0.0,
         'gender': _gender,
         'isPregnant': _gender == 'female' ? _isPregnant : false,
+        'hasIllness': _hasIllness,
+        if (_hasIllness) 'illnessDescription': _illnessController.text.trim(),
         'notes': _notesController.text.trim(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
@@ -97,6 +102,8 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
       _priceController.text = data['price']?.toString() ?? '';
       _gender = data['gender'] ?? 'male';
       _isPregnant = data['isPregnant'] ?? false;
+      _hasIllness = data['hasIllness'] ?? false;
+      _illnessController.text = data['illnessDescription'] ?? '';
       _notesController.text = data['notes'] ?? '';
       _showAddForm = true;
     });
@@ -141,6 +148,8 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
     _formKey.currentState?.reset();
     _gender = 'male';
     _isPregnant = false;
+    _hasIllness = false;
+    _illnessController.clear();
     _editingLivestockId = null;
     setState(() => _showAddForm = false);
   }
@@ -260,7 +269,6 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                       children: [
                                         TextButton(
                                           onPressed: () => _editLivestock(doc),
-                                          child: const Text('Edit'),
                                           style: TextButton.styleFrom(
                                             foregroundColor: Colors.green[700],
                                             side: BorderSide(
@@ -272,6 +280,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                                   BorderRadius.circular(8),
                                             ),
                                           ),
+                                          child: const Text('Edit'),
                                         ),
                                         const SizedBox(width: 8),
                                         ElevatedButton(
@@ -302,7 +311,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                     _buildDetailItem(
                                       Icons.numbers,
                                       '${data['count']}',
-                                      'Count',
+                                      'ID',
                                     ),
                                     const SizedBox(width: 16),
                                     _buildDetailItem(
@@ -334,6 +343,27 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                             : 'Not Pregnant',
                                         style: TextStyle(
                                           color: Colors.pink[700],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                if (data['hasIllness'] == true) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.medical_services,
+                                        size: 20,
+                                        color: Colors.red[700],
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Illness: ${data['illnessDescription'] ?? 'Not specified'}',
+                                          style: TextStyle(
+                                            color: Colors.red[700],
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -473,7 +503,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                               child: TextFormField(
                                 controller: _countController,
                                 decoration: InputDecoration(
-                                  labelText: 'Count',
+                                  labelText: 'ID',
                                   prefixIcon: const Icon(Icons.numbers),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -557,6 +587,34 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                             value: _isPregnant,
                             onChanged: (value) {
                               setState(() => _isPregnant = value);
+                            },
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        SwitchListTile(
+                          title: const Text('Has Illness'),
+                          value: _hasIllness,
+                          onChanged: (value) {
+                            setState(() => _hasIllness = value);
+                          },
+                        ),
+                        if (_hasIllness) ...[
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _illnessController,
+                            decoration: InputDecoration(
+                              labelText: 'Illness Description',
+                              prefixIcon: const Icon(Icons.medical_services),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (_hasIllness &&
+                                  (value == null || value.isEmpty)) {
+                                return 'Please describe the illness';
+                              }
+                              return null;
                             },
                           ),
                         ],

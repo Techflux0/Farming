@@ -17,10 +17,17 @@ dependencies:
   google_sign_in: ^6.1.0
   internet_connection_checker: ^1.0.0
   async: ^2.11.0
+  path: ^1.9.1
   pedantic: ^1.11.1
   geolocator: ^10.0.0
   http: ^0.13.5
+  http_parser: ^4.1.2
+  mime: ^2.0.0
+  image_picker: ^1.1.2
   intl: ^0.18.1
+  share_plus: ^11.0.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
 
 
 dev_dependencies:
@@ -41,3 +48,5 @@ flutter:
     - assets/launcher/splash.json
     - assets/scafold/sprout.png
     - assets/scafold/google.png
+
+

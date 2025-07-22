@@ -21,11 +21,11 @@ class _UserManagementPageState extends State<UserManagementPage> {
     super.dispose();
   }
 
-  Future<void> _updateUserRole(String userId, String newRole) async {
+  Future<void> _updateUserRoles(String userId, String newRole) async {
     setState(() => _isLoading = true);
     try {
       await _firestore.collection('users').doc(userId).update({
-        'role': newRole,
+        'roles': [newRole, 'null'],
         'updatedAt': FieldValue.serverTimestamp(),
       });
       _showSnackBar('User role updated to $newRole');
@@ -172,7 +172,13 @@ class _UserManagementPageState extends State<UserManagementPage> {
                     final userData = userDoc.data() as Map<String, dynamic>;
                     final userId = userDoc.id;
                     final email = userData['email'] ?? 'No email';
-                    final role = userData['role'] ?? 'member';
+                    final roles =
+                        (userData['roles'] as List?)?.cast<String>() ??
+                        ['member'];
+                    final primaryRole = roles.firstWhere(
+                      (r) => r != 'null',
+                      orElse: () => 'member',
+                    );
                     final name = userData['fullname'] ?? 'Unknown';
                     final status = userData['membership_status'] ?? 'pending';
                     final createdAt = (userData['createdAt'] as Timestamp?)
@@ -196,7 +202,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                         leading: CircleAvatar(
                           backgroundColor: Colors.green[100],
                           child: Icon(
-                            _getRoleIcon(role),
+                            _getRoleIcon(primaryRole),
                             color: Colors.green[700],
                           ),
                         ),
@@ -224,7 +230,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildDetailRow('Role', role),
+                                _buildDetailRow('Role', primaryRole),
                                 _buildDetailRow('Status', status),
                                 if (createdAt != null)
                                   _buildDetailRow(
@@ -253,7 +259,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                         ),
                                       ),
                                     DropdownButton<String>(
-                                      value: role,
+                                      value: primaryRole,
                                       icon: const Icon(Icons.arrow_drop_down),
                                       elevation: 16,
                                       style: const TextStyle(
@@ -265,7 +271,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                       ),
                                       onChanged: (String? newValue) {
                                         if (newValue != null) {
-                                          _updateUserRole(userId, newValue);
+                                          _updateUserRoles(userId, newValue);
                                         }
                                       },
                                       items:
@@ -426,3 +432,4 @@ class _UserManagementPageState extends State<UserManagementPage> {
     }
   }
 }
+

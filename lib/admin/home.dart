@@ -24,17 +24,27 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   Future<void> _fetchUserData() async {
     try {
-      final usersQuery = await _firestore.collection('users').get();
+      final usersQuery = await _firestore
+          .collection('users')
+          .where(
+            'roles',
+            arrayContainsAny: ['admin', 'veterinary', 'farmer', 'member'],
+          )
+          .get();
 
       int vets = 0;
       int farmers = 0;
       int members = 0;
 
       for (final doc in usersQuery.docs) {
-        final role = doc['role']?.toString() ?? 'member';
-        if (role == 'veterinary') vets++;
-        if (role == 'farmer') farmers++;
-        if (role == 'member') members++;
+        final roles = (doc['roles'] as List?)?.cast<String>() ?? ['member'];
+
+        // Check the first role (since second is always "null")
+        final primaryRole = roles[0];
+
+        if (primaryRole == 'veterinary') vets++;
+        if (primaryRole == 'farmer') farmers++;
+        if (primaryRole == 'member') members++;
       }
 
       setState(() {
@@ -49,6 +59,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error loading user data: $e')));
+      debugPrint('Error details: $e');
     }
   }
 
@@ -59,6 +70,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 32, color: color),
             const SizedBox(height: 8),

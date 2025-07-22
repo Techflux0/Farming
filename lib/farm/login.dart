@@ -6,6 +6,8 @@ import '../admin/dash.dart';
 import 'notify.dart';
 import '../farmer/dash.dart';
 import '../vet/dash.dart';
+import '../secretary/home.dart';
+import '../treasuree/dash.dart';
 
 class EmailLoginPage extends StatefulWidget {
   const EmailLoginPage({super.key});
@@ -78,6 +80,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
+
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -87,20 +90,24 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
         credential,
       );
 
+      final String uid = userCredential.user?.uid ?? '';
+      final String email = userCredential.user?.email ?? '';
+      final String name = userCredential.user?.displayName ?? 'Google User';
+
       if (userCredential.additionalUserInfo?.isNewUser ?? false) {
-        // New user - create profile
-        await _firestore.collection('users').doc(userCredential.user?.uid).set({
-          'uid': userCredential.user?.uid,
-          'email': userCredential.user?.email,
-          'fullname': userCredential.user?.displayName ?? 'Google User',
-          'role': 'member',
+        // 🆕 New user - create profile with roles array
+        await _firestore.collection('users').doc(uid).set({
+          'uid': uid,
+          'email': email,
+          'fullname': name,
+          'roles': ['member', 'null'],
           'membership_status': 'pending',
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
       }
 
-      await _redirectUser(userCredential.user?.uid);
+      await _redirectUser(uid);
     } on FirebaseAuthException catch (e) {
       _handleAuthError(e);
     } on FirebaseException catch (e) {
@@ -146,11 +153,24 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
         return;
       }
 
-      final role = userData['role'] as String? ?? 'member';
+      final roles =
+          (userData['roles'] as List?)?.whereType<String>().toList() ?? [];
+
+      if (roles.isEmpty) {
+        _setError('No role assigned to your account');
+        return;
+      }
+
+      String selectedRole = roles[0];
+
+      // ✅ Check if second role is a valid string and not "null"
+      if (roles.length > 1 && roles[1] != "null") {
+        selectedRole = await _showRoleSelectionDialog(roles) ?? roles[0];
+      }
 
       if (!mounted) return;
 
-      switch (role) {
+      switch (selectedRole) {
         case 'admin':
           Navigator.pushAndRemoveUntil(
             context,
@@ -172,17 +192,55 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
             (route) => false,
           );
           break;
-        case 'member':
-          Navigator.pushReplacementNamed(context, '/member-home');
+        case 'secretary':
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SecretaryHomeScreen(),
+            ),
+            (route) => false,
+          );
+          break;
+        case 'treasurer':
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const TreasurerDashboard()),
+            (route) => false,
+          );
           break;
         default:
           Navigator.pushReplacementNamed(context, '/home');
       }
-    } on FirebaseException catch (e) {
+    } on FirebaseException {
       _setError('Failed to load user profile. Please try again.');
     } catch (e) {
       _setError('An unexpected error occurred');
     }
+  }
+
+  Future<String?> _showRoleSelectionDialog(List<String> roles) async {
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Choose Login Role'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: roles
+                .where((role) => role != "null" && role.isNotEmpty)
+                .map(
+                  (role) => ListTile(
+                    leading: const Icon(Icons.account_circle),
+                    title: Text(role[0].toUpperCase() + role.substring(1)),
+                    onTap: () => Navigator.of(context).pop(role),
+                  ),
+                )
+                .toList(),
+          ),
+        );
+      },
+    );
   }
 
   void _handleAuthError(FirebaseAuthException e) {

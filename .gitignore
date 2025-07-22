@@ -16,7 +16,7 @@ migrate_working_dir/
 *.lockfile
 *.vscode
 
-
+/
 *.iml
 *.ipr
 *.iws
