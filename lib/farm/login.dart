@@ -187,6 +187,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
             (route) => false,
           );
           break;
+        
         case 'secretary':
           Navigator.pushAndRemoveUntil(
             context,
