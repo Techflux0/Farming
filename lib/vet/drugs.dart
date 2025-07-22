@@ -298,7 +298,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                   : _firestore
                         .collection('drugs')
                         .where('name', isGreaterThanOrEqualTo: _searchQuery)
-                        .where('name', isLessThan: _searchQuery + 'z')
+                        .where('name', isLessThan: '${_searchQuery}z')
                         .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -371,10 +371,10 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                               child: ListTile(
                                 leading: CircleAvatar(
                                   backgroundColor: Colors.grey[200],
-                                  child: _buildDrugIcon(data['category']),
                                   foregroundImage: data['imageUrl'] != null
                                       ? NetworkImage(data['imageUrl'])
                                       : null,
+                                  child: _buildDrugIcon(data['category']),
                                 ),
                                 title: Text(
                                   data['name'],

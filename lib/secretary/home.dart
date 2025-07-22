@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'communication.dart';
-import 'minutes.dart';
-import 'reports.dart';
 
 class SecretaryHomeScreen extends StatefulWidget {
   const SecretaryHomeScreen({super.key});
@@ -20,6 +17,7 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
   int _farmers = 0;
   int _members = 0;
   bool _isLoading = true;
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -62,6 +60,96 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
     final Color primaryColor = Theme.of(context).primaryColor;
     final Color cardColor = Colors.blue[50]!;
 
+    Widget bodyContent = _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Dashboard cards
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _DashboardCard(
+                        title: 'Communication',
+                        icon: Icons.message,
+                        color: Colors.blue,
+                        onTap: () {
+                          setState(() => _currentIndex = 0);
+                        },
+                      ),
+                      _DashboardCard(
+                        title: 'Reports',
+                        icon: Icons.assignment,
+                        color: Colors.green,
+                        onTap: () {
+                          setState(() => _currentIndex = 1);
+                        },
+                      ),
+                      _DashboardCard(
+                        title: 'Minutes',
+                        icon: Icons.event_note,
+                        color: Colors.orange,
+                        onTap: () {
+                          setState(() => _currentIndex = 2);
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  // Quick stats
+                  Card(
+                    color: cardColor,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'User Summary',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text('Total Users: $_totalUsers'),
+                          Text('Veterinarians: $_veterinarians'),
+                          Text('Farmers: $_farmers'),
+                          Text('Members: $_members'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Recent activities summary
+                  const Text(
+                    'Recent Activities',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  _RecentActivitiesCard(firestore: _firestore),
+                ],
+              ),
+            ),
+          );
+
+    // For demonstration, you can swap the body based on the selected tab if you want dedicated screens:
+      //Widget bodyContent;
+      //switch (_currentIndex) {
+      //  case 0:
+      //    bodyContent = CommunicationScreen();
+      //    break;  
+      //  case 1:
+      //    bodyContent = ReportsHomeScreen();    
+      //    break;
+      //  case 2:
+      //    bodyContent = MinutesHomeScreen();
+      //    break;
+      // default:
+      //    bodyContent = ...;
+      // }
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -85,88 +173,31 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
         ),
         backgroundColor: primaryColor,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Dashboard cards
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _DashboardCard(
-                          title: 'Communication',
-                          icon: Icons.message,
-                          color: Colors.blue,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => CommunicationHomeScreen()),
-                            );
-                          },
-                        ),
-                        _DashboardCard(
-                          title: 'Reports',
-                          icon: Icons.assignment,
-                          color: Colors.green,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => ReportsHomeScreen()),
-                            );
-                          },
-                        ),
-                        _DashboardCard(
-                          title: 'Minutes',
-                          icon: Icons.event_note,
-                          color: Colors.orange,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => MinutesHomeScreen()),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    // Quick stats
-                    Card(
-                      color: cardColor,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'User Summary',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Text('Total Users: $_totalUsers'),
-                            Text('Veterinarians: $_veterinarians'),
-                            Text('Farmers: $_farmers'),
-                            Text('Members: $_members'),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Recent activities summary
-                    const Text(
-                      'Recent Activities',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    _RecentActivitiesCard(firestore: _firestore),
-                  ],
-                ),
-              ),
-            ),
+      body: bodyContent,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+            // Optionally, you can navigate to different screens here
+            // For now, just update the index
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message),
+            label: 'Communication',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment),
+            label: 'Reports',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event_note),
+            label: 'Minutes',
+          ),
+        ],
+      ),
     );
   }
 }

@@ -257,7 +257,7 @@ class _VeterinaryLivestockPageState extends State<VeterinaryLivestockPage> {
                                 _buildDetailRow('Gender', data['gender']),
                                 _buildDetailRow(
                                   'Price',
-                                  '\Kes${data['price']}',
+                                  'Kes${data['price']}',
                                 ),
                                 if (data['gender'] == 'female')
                                   _buildDetailRow(
