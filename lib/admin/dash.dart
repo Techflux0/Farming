@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'users.dart';
 import 'home.dart';
 import 'livestock.dart';
-import 'crop.dart';
 import '../farm/weather.dart';
 import 'market.dart';
 import '../farm/profile.dart';
@@ -20,7 +19,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
   final List<Widget> _screens = [
     const AdminHomeScreen(),
     const LivestockManagementScreen(),
-    const CropManagementScreen(),
     const WeatherPage(),
     const MarketManagementScreen(),
     const UserManagementPage(),
@@ -45,7 +43,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Livestock'),
-          BottomNavigationBarItem(icon: Icon(Icons.spa), label: 'Crops'),
           BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),

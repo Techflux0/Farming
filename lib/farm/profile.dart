@@ -17,13 +17,12 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isLoading = true;
   bool _isEditing = false;
 
-  final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _secondaryPhoneController =
-      TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _secondaryPhoneController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _ageController = TextEditingController();
 
   @override
   void initState() {
@@ -38,7 +37,6 @@ class _ProfilePageState extends State<ProfilePage> {
           .collection('users')
           .doc(user.uid)
           .get();
-
       if (doc.exists) {
         setState(() {
           _userData = doc.data() ?? {};
@@ -135,7 +133,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileHeader() {
-    final role = _userData['role']?.toString().toUpperCase() ?? 'MEMBER';
+    final roles = (_userData['roles'] as List?)?.cast<String>() ?? ['member'];
+    final primaryRole = roles.firstWhere(
+      (r) => r != 'null',
+      orElse: () => 'member',
+    );
     final createdAt = _userData['createdAt'] as Timestamp?;
     final formattedDate = createdAt != null
         ? DateFormat('MMM d, y').format(createdAt.toDate())
@@ -147,10 +149,10 @@ class _ProfilePageState extends State<ProfilePage> {
           alignment: Alignment.bottomRight,
           children: [
             Container(
+              height: 180,
+              width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
                   colors: [Colors.green[700]!, Colors.green[400]!],
                 ),
                 borderRadius: const BorderRadius.only(
@@ -158,14 +160,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   bottomRight: Radius.circular(20),
                 ),
               ),
-              height: 180,
-              width: double.infinity,
               child: Center(
                 child: CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.white.withOpacity(0.2),
                   child: Icon(
-                    _getRoleIcon(_userData['role'] ?? 'member'),
+                    _getRoleIcon(primaryRole),
                     size: 50,
                     color: Colors.white,
                   ),
@@ -210,59 +210,33 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getRoleColor(
-                        _userData['role'] ?? 'member',
-                      ).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      role,
-                      style: TextStyle(
-                        color: _getRoleColor(_userData['role'] ?? 'member'),
-                        fontWeight: FontWeight.bold,
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                alignment: WrapAlignment.center,
+                children: roles
+                    .where((r) => r != 'null')
+                    .map(
+                      (role) => Chip(
+                        label: Text(role.toUpperCase()),
+                        backgroundColor: _getRoleColor(role).withOpacity(0.15),
+                        labelStyle: TextStyle(
+                          color: _getRoleColor(role),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Icon(Icons.circle, size: 6, color: Colors.grey),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Joined $formattedDate',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Joined $formattedDate',
+                style: TextStyle(color: Colors.grey[600]),
               ),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  //logout button
-  Widget _buildLogoutButton() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: ElevatedButton(
-        onPressed: () async {
-          await FirebaseAuth.instance.signOut();
-          Navigator.of(context).pushReplacementNamed('/login');
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red[700],
-          padding: const EdgeInsets.symmetric(vertical: 16),
-        ),
-        child: const Text('Logout'),
-      ),
     );
   }
 
@@ -279,7 +253,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildInfoTile(
           icon: Icons.phone,
           title: 'Phone',
-          value: _userData['primary_phone'] ?? 'Not provided',
+          value: _userData['primary_phone'] ?? '',
           controller: _phoneController,
           isEditable: _isEditing,
         ),
@@ -287,7 +261,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildInfoTile(
           icon: Icons.phone_android,
           title: 'Secondary Phone',
-          value: _userData['secondary_phone'] ?? 'Not provided',
+          value: _userData['secondary_phone'] ?? '',
           controller: _secondaryPhoneController,
           isEditable: _isEditing,
           optional: true,
@@ -296,7 +270,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildInfoTile(
           icon: Icons.location_on,
           title: 'Address',
-          value: _userData['address'] ?? 'Not provided',
+          value: _userData['address'] ?? '',
           controller: _addressController,
           isEditable: _isEditing,
           maxLines: 3,
@@ -305,7 +279,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildInfoTile(
           icon: Icons.cake,
           title: 'Age',
-          value: _userData['age']?.toString() ?? 'Not provided',
+          value: _userData['age']?.toString() ?? '',
           controller: _ageController,
           isEditable: _isEditing,
           keyboardType: TextInputType.number,
@@ -339,13 +313,13 @@ class _ProfilePageState extends State<ProfilePage> {
       subtitle: isEditable
           ? TextFormField(
               controller: controller,
+              keyboardType: keyboardType,
+              maxLines: maxLines,
               decoration: InputDecoration(
-                hintText: value == 'Not provided' ? '' : value,
+                hintText: value,
                 border: UnderlineInputBorder(),
                 isDense: true,
               ),
-              keyboardType: keyboardType,
-              maxLines: maxLines,
               validator: (val) {
                 if (!optional && (val == null || val.isEmpty)) {
                   return 'Please enter $title';
@@ -367,11 +341,10 @@ class _ProfilePageState extends State<ProfilePage> {
           child: OutlinedButton(
             onPressed: () {
               setState(() => _isEditing = false);
-              _loadUserData(); // Reset changes
+              _loadUserData();
             },
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              side: BorderSide(color: Colors.grey[300]!),
             ),
             child: const Text('Cancel'),
           ),
@@ -399,6 +372,8 @@ class _ProfilePageState extends State<ProfilePage> {
         return Icons.agriculture;
       case 'veterinary':
         return Icons.medical_services;
+      case 'secretary':
+        return Icons.assignment_ind;
       default:
         return Icons.person;
     }
@@ -412,6 +387,8 @@ class _ProfilePageState extends State<ProfilePage> {
         return Colors.green;
       case 'veterinary':
         return Colors.blue;
+      case 'secretary':
+        return Colors.orange;
       default:
         return Colors.grey;
     }
