@@ -279,7 +279,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                             'admin',
                                             'farmer',
                                             'veterinary',
-                                            'member',
+                                            'secretary',
                                           ].map<DropdownMenuItem<String>>((
                                             String value,
                                           ) {
