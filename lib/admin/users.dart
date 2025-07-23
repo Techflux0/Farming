@@ -21,11 +21,20 @@ class _UserManagementPageState extends State<UserManagementPage> {
     super.dispose();
   }
 
+  // Yooh i fixed this to only edit 'null' role
   Future<void> _updateUserRoles(String userId, String newRole) async {
     setState(() => _isLoading = true);
     try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      List roles =
+          (userDoc.data()?['roles'] as List?)?.cast<String>() ??
+          ['member', 'null'];
+      if (roles.length < 2) {
+        roles = [roles.isNotEmpty ? roles[0] : 'member', 'null'];
+      }
+      roles[1] = newRole;
       await _firestore.collection('users').doc(userId).update({
-        'roles': [newRole, 'null'],
+        'roles': roles,
         'updatedAt': FieldValue.serverTimestamp(),
       });
       _showSnackBar('User role updated to $newRole');
@@ -432,4 +441,3 @@ class _UserManagementPageState extends State<UserManagementPage> {
     }
   }
 }
-
