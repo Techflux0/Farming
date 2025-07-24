@@ -58,7 +58,7 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
       if (_editingDoc != null) {
         // Update
         await FirebaseFirestore.instance
-            .collection('registration_fees')
+            .collection('monthly_payment')
             .doc(_editingDoc!.id)
             .update(data);
 
@@ -68,11 +68,11 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
       } else {
         // Create
         await FirebaseFirestore.instance
-            .collection('registration_fees')
+            .collection('monthly_payment')
             .add(data);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('✔ Registration fee recorded')),
+          const SnackBar(content: Text('✔ Monthly payment fee recorded')),
         );
       }
 
@@ -109,7 +109,7 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
 
   Future<void> _deleteRecord(String id) async {
     await FirebaseFirestore.instance
-        .collection('registration_fees')
+        .collection('monthly_payment')
         .doc(id)
         .delete();
 
@@ -251,7 +251,7 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
             const SizedBox(height: 8),
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection('registration_fees')
+                  .collection('monthly_payment')
                   .orderBy('timestamp', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
