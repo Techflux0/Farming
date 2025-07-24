@@ -10,13 +10,16 @@ class CommunicationHomeScreen extends StatefulWidget {
 
 class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  // final FirebaseMessaging _messaging = FirebaseMessaging.instance; // Uncomment if using push notifications
-
   String _selectedType = 'Meeting Announcement';
   final TextEditingController _receiverController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
 
+  bool _isSending = false; // Suggestion 2: Loading indicator
+
   Future<void> sendMessage(String senderId, String receiverId, String message, String type) async {
+    setState(() {
+      _isSending = true;
+    });
     try {
       await _firestore.collection('messages').add({
         'senderId': senderId,
@@ -25,37 +28,16 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
         'type': type,
         'timestamp': FieldValue.serverTimestamp(),
       });
-
-      // --- PUSH NOTIFICATION LOGIC SCAFFOLD ---
-      // Uncomment and implement this section if you have firebase_messaging set up.
-      // You would typically fetch the receiver's device token from Firestore and send a notification.
-      /*
-      if (receiverId.isNotEmpty) {
-        // Fetch receiver's device token from Firestore (pseudo-code)
-        final tokenSnapshot = await _firestore.collection('users').doc(receiverId).get();
-        final deviceToken = tokenSnapshot.data()?['deviceToken'];
-        if (deviceToken != null) {
-          await _messaging.sendMessage(
-            to: deviceToken,
-            data: {
-              'title': type,
-              'body': message,
-            },
-          );
-        }
-      } else {
-        // For system-wide messages, send to a topic or all users
-        // await _messaging.subscribeToTopic('all');
-        // await _messaging.sendMessage(
-        //   to: '/topics/all',
-        //   data: {'title': type, 'body': message},
-        // );
-      }
-      */
-      // --- END PUSH NOTIFICATION LOGIC SCAFFOLD ---
-
+      // Success feedback is handled below
     } catch (e) {
-      print('Error sending message: $e');
+      // Suggestion 4: Show error to user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sending message: $e')),
+      );
+    } finally {
+      setState(() {
+        _isSending = false;
+      });
     }
   }
 
@@ -65,6 +47,13 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
         .where('receiverId', isEqualTo: userId)
         .orderBy('timestamp', descending: true)
         .snapshots();
+  }
+
+  @override
+  void dispose() {
+    _receiverController.dispose();
+    _messageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -132,23 +121,42 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                       maxLines: 2,
                     ),
                     const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.send),
-                      label: const Text('Send'),
-                      style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-                      onPressed: () async {
-                        final senderId = 'secretary'; //  Replace with actual sender ID logic
-                        // For example, you might fetch the current user's ID from Firebase Auth.
-                        final receiverId = _receiverController.text.trim();
-                        final message = _messageController.text.trim();
-                        if (message.isNotEmpty) {
-                          await sendMessage(senderId, receiverId, message, _selectedType);
-                          _messageController.clear();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Message sent!')),
-                          );
-                        }
-                      },
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: _isSending
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.send),
+                        label: Text(_isSending ? 'Sending...' : 'Send'),
+                        style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+                        onPressed: _isSending
+                            ? null
+                            : () async {
+                                final senderId = 'secretary'; // Replace with actual sender ID logic
+                                final receiverId = _receiverController.text.trim();
+                                final message = _messageController.text.trim();
+                                // Suggestion 3: Input validation
+                                if (message.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Message cannot be empty')),
+                                  );
+                                  return;
+                                }
+                                // Optionally validate receiverId here if needed
+                                await sendMessage(senderId, receiverId, message, _selectedType);
+                                _messageController.clear();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Message sent!')),
+                                );
+                              },
+                      ),
                     ),
                   ],
                 ),
