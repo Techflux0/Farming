@@ -14,18 +14,27 @@ class _UserManagementPageState extends State<UserManagementPage> {
   String _searchQuery = '';
   bool _isLoading = false;
   final Map<String, bool> _expandedUsers = {};
-
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+    _isLoading;
   }
 
+  // Yooh i fixed this to only edit 'null' role
   Future<void> _updateUserRoles(String userId, String newRole) async {
     setState(() => _isLoading = true);
     try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      List roles =
+          (userDoc.data()?['roles'] as List?)?.cast<String>() ??
+          ['member', 'null'];
+      if (roles.length < 2) {
+        roles = [roles.isNotEmpty ? roles[0] : 'member', 'null'];
+      }
+      roles[1] = newRole;
       await _firestore.collection('users').doc(userId).update({
-        'roles': [newRole, 'null'],
+        'roles': roles,
         'updatedAt': FieldValue.serverTimestamp(),
       });
       _showSnackBar('User role updated to $newRole');
@@ -275,14 +284,21 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                         }
                                       },
                                       items:
-                                          <String>[
+                                          ([
                                             'admin',
                                             'farmer',
                                             'veterinary',
-                                            'member',
-                                          ].map<DropdownMenuItem<String>>((
-                                            String value,
-                                          ) {
+                                            'secretary',
+                                            if (![
+                                              'admin',
+                                              'farmer',
+                                              'veterinary',
+                                              'secretary',
+                                            ].contains(primaryRole))
+                                              primaryRole,
+                                          ].toSet().toList()).map<
+                                            DropdownMenuItem<String>
+                                          >((String value) {
                                             return DropdownMenuItem<String>(
                                               value: value,
                                               child: Text(
@@ -432,4 +448,3 @@ class _UserManagementPageState extends State<UserManagementPage> {
     }
   }
 }
-

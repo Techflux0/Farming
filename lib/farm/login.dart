@@ -192,7 +192,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
             (route) => false,
           );
           break;
-        
+
         case 'secretary':
           Navigator.pushAndRemoveUntil(
             context,
@@ -224,20 +224,82 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Choose Login Role'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: roles
-                .where((role) => role != "null" && role.isNotEmpty)
-                .map(
-                  (role) => ListTile(
-                    leading: const Icon(Icons.account_circle),
-                    title: Text(role[0].toUpperCase() + role.substring(1)),
-                    onTap: () => Navigator.of(context).pop(role),
+        return Theme(
+          data: Theme.of(context).copyWith(
+            dialogBackgroundColor: Colors.white,
+            // Removed dialogTheme property, set shape in AlertDialog below
+          ),
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text(
+              'Choose Login Role',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: roles
+                  .where((role) => role != "null" && role.isNotEmpty)
+                  .map(
+                    (role) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => Navigator.of(context).pop(role),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.grey[100],
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.account_circle,
+                                  color: Colors.blueGrey,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  role[0].toUpperCase() + role.substring(1),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.blue,
+                  textStyle: const TextStyle(fontSize: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                )
-                .toList(),
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+            ],
           ),
         );
       },
@@ -282,7 +344,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text('Login'),
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.blue,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -297,7 +359,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.green,
+                color: Colors.blue,
               ),
             ),
             const SizedBox(height: 20),
@@ -415,7 +477,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                               ? null
                               : _loginWithEmailPassword,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[700],
+                            backgroundColor: Colors.blue,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),

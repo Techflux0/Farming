@@ -15,6 +15,11 @@ migrate_working_dir/
 *.lock
 *.lockfile
 *.vscode
+.fetch
+*.fetch-client
+/*.vscode/
+.vscode/
+*.iml
 
 /
 *.iml

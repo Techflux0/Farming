@@ -37,10 +37,10 @@ class MyApp extends StatelessWidget {
       ),
       home: const SplashScreen(),
       routes: {
-        '/landing': (context) => const HomeLandingPage(),
+        '/landing': (context) => const GoatFarmLandingPage(),
         '/farm/login': (context) => const EmailLoginPage(),
         '/farm/signup': (context) => const SecureSignUpPage(),
-        '/home': (context) => const HomeLandingPage(),
+        '/home': (context) => const GoatFarmLandingPage(),
       },
     );
   }
@@ -58,7 +58,6 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    // Delay and navigate based on auth status
     Future.delayed(const Duration(seconds: 5), () {
       final user = FirebaseAuth.instance.currentUser;
 

@@ -14,6 +14,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int _veterinarians = 0;
   int _farmers = 0;
   int _members = 0;
+  int _treasurers = 0;
+  int _secretaries = 0;
   bool _isLoading = true;
 
   @override
@@ -28,7 +30,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           .collection('users')
           .where(
             'roles',
-            arrayContainsAny: ['admin', 'veterinary', 'farmer', 'member'],
+            arrayContainsAny: [
+              'admin',
+              'veterinary',
+              'farmer',
+              'treasurer',
+              'secretary',
+              'member',
+            ],
           )
           .get();
 
@@ -37,14 +46,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       int members = 0;
 
       for (final doc in usersQuery.docs) {
-        final roles = (doc['roles'] as List?)?.cast<String>() ?? ['member'];
+        final roles = (doc['roles'] as List?)?.cast<String>() ?? [];
 
-        // Check the first role (since second is always "null")
-        final primaryRole = roles[0];
+        // Count each role only once per user (avoid double-counting)
+        final roleSet = roles.toSet();
 
-        if (primaryRole == 'veterinary') vets++;
-        if (primaryRole == 'farmer') farmers++;
-        if (primaryRole == 'member') members++;
+        if (roleSet.contains('veterinary')) vets++;
+        if (roleSet.contains('farmer')) farmers++;
+        if (roleSet.contains('treasurer')) _treasurers++;
+        if (roleSet.contains('secretary')) _secretaries++;
+        if (roleSet.contains('member') || roleSet.isEmpty) members++;
       }
 
       setState(() {
@@ -52,6 +63,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         _veterinarians = vets;
         _farmers = farmers;
         _members = members;
+        _treasurers = _treasurers;
+        _secretaries = _secretaries;
         _isLoading = false;
       });
     } catch (e) {
@@ -112,13 +125,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       color: Colors.green[800],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  _buildRoleCard(
-                    'Total Users',
-                    _totalUsers,
-                    Icons.group,
-                    Colors.green,
-                  ),
                   const SizedBox(height: 16),
                   GridView.count(
                     shrinkWrap: true,
@@ -129,16 +135,34 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     crossAxisSpacing: 12,
                     children: [
                       _buildRoleCard(
+                        'Total Users',
+                        _totalUsers,
+                        Icons.group,
+                        Colors.green,
+                      ),
+                      _buildRoleCard(
                         'Veterinarians',
                         _veterinarians,
                         Icons.medical_services,
                         Colors.blue,
                       ),
                       _buildRoleCard(
+                        'Treasurers',
+                        _treasurers,
+                        Icons.account_balance_wallet,
+                        Colors.amber,
+                      ),
+                      _buildRoleCard(
                         'Farmers',
                         _farmers,
                         Icons.agriculture,
                         Colors.orange,
+                      ),
+                      _buildRoleCard(
+                        'Secretaries',
+                        _secretaries,
+                        Icons.assignment_ind,
+                        Colors.pink,
                       ),
                       _buildRoleCard(
                         'Members',
@@ -159,7 +183,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Refresh Data'),
+                    child: const Text('Refresh'),
                   ),
                 ],
               ),

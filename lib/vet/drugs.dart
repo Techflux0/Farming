@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
 import 'dart:convert';
+import '../farm/notify.dart';
 
 class FarmerDrugsPage extends StatefulWidget {
   const FarmerDrugsPage({super.key});
@@ -64,9 +65,12 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+      NotificationBar.show(
+        // ignore: use_build_context_synchronously
+        context: context,
+        message: 'Error picking image: $e',
+        isError: true,
+      );
     }
   }
 
@@ -103,9 +107,12 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
         throw Exception('Failed to upload image to ImgBB');
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Image upload failed: $e')));
+      NotificationBar.show(
+        // ignore: use_build_context_synchronously
+        context: context,
+        message: 'Image upload failed: $e',
+        isError: true,
+      );
       return null;
     } finally {
       setState(() => _loading = false);
@@ -116,18 +123,20 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
     if (_nameController.text.isEmpty ||
         _priceController.text.isEmpty ||
         _quantityController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields')),
+      NotificationBar.show(
+        context: context,
+        message: 'Please fill all required fields',
+        isError: true,
       );
       return;
     }
 
     if (double.tryParse(_priceController.text) == null ||
         int.tryParse(_quantityController.text) == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter valid numbers for price and quantity'),
-        ),
+      NotificationBar.show(
+        context: context,
+        message: 'Please enter valid numbers for price and quantity',
+        isError: true,
       );
       return;
     }
@@ -158,8 +167,11 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
           // Add new drug
           drugData['createdAt'] = FieldValue.serverTimestamp();
           await _firestore.collection('drugs').add(drugData);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Drug added successfully')),
+          NotificationBar.show(
+            // ignore: use_build_context_synchronously
+            context: context,
+            message: 'Drug added successfully',
+            isError: false,
           );
         } else {
           // Update existing drug
@@ -167,8 +179,11 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
               .collection('drugs')
               .doc(_editingDrugId)
               .update(drugData);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Drug updated successfully')),
+          NotificationBar.show(
+            // ignore: use_build_context_synchronously
+            context: context,
+            message: 'Drug updated successfully',
+            isError: false,
           );
         }
 
@@ -176,9 +191,12 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
         _clearForm();
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error saving drug: $e')));
+      NotificationBar.show(
+        // ignore: use_build_context_synchronously
+        context: context,
+        message: 'Error saving drug: $e',
+        isError: true,
+      );
     } finally {
       setState(() => _loading = false);
     }
@@ -187,13 +205,19 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
   Future<void> _deleteDrug(String drugId) async {
     try {
       await _firestore.collection('drugs').doc(drugId).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Drug deleted successfully')),
+      NotificationBar.show(
+        // ignore: use_build_context_synchronously
+        context: context,
+        message: 'Drug deleted successfully',
+        isError: false,
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error deleting drug: $e')));
+      NotificationBar.show(
+        // ignore: use_build_context_synchronously
+        context: context,
+        message: 'Error deleting drug: $e',
+        isError: true,
+      );
     }
   }
 
@@ -298,7 +322,8 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                   : _firestore
                         .collection('drugs')
                         .where('name', isGreaterThanOrEqualTo: _searchQuery)
-                        .where('name', isLessThan: '${_searchQuery}z')
+                        // ignore: prefer_interpolation_to_compose_strings
+                        .where('name', isLessThan: _searchQuery + 'z')
                         .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -371,10 +396,11 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                               child: ListTile(
                                 leading: CircleAvatar(
                                   backgroundColor: Colors.grey[200],
+                                  // ignore: sort_child_properties_last
+                                  child: _buildDrugIcon(data['category']),
                                   foregroundImage: data['imageUrl'] != null
                                       ? NetworkImage(data['imageUrl'])
                                       : null,
-                                  child: _buildDrugIcon(data['category']),
                                 ),
                                 title: Text(
                                   data['name'],
@@ -571,10 +597,10 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
               if (_nameController.text.isEmpty ||
                   _priceController.text.isEmpty ||
                   _quantityController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please fill all required fields (*)'),
-                  ),
+                NotificationBar.show(
+                  context: context,
+                  message: 'Please fill all required fields (*)',
+                  isError: true,
                 );
                 return;
               }

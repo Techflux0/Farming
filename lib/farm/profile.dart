@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'notify.dart';
+import 'home.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -84,6 +85,15 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const GoatFarmLandingPage()),
+      (route) => false,
+    );
+  }
+
   @override
   void dispose() {
     _fullNameController.dispose();
@@ -99,6 +109,25 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        backgroundColor: Colors.green[700],
+        elevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(8),
+                elevation: 0,
+              ),
+              onPressed: _logout,
+              child: const Icon(Icons.logout, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -163,7 +192,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Center(
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundColor: Colors.white.withOpacity(0.2),
+                  backgroundColor: Colors.white.withAlpha(51), // 0.2 * 255 = 51
                   child: Icon(
                     _getRoleIcon(primaryRole),
                     size: 50,
@@ -179,7 +208,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withAlpha(230), // 0.9 * 255 = 230
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -219,7 +248,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     .map(
                       (role) => Chip(
                         label: Text(role.toUpperCase()),
-                        backgroundColor: _getRoleColor(role).withOpacity(0.15),
+                        backgroundColor: _getRoleColor(
+                          role,
+                        ).withAlpha(38), // 0.15 * 255 = 38
                         labelStyle: TextStyle(
                           color: _getRoleColor(role),
                           fontWeight: FontWeight.bold,

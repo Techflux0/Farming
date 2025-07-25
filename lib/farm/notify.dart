@@ -5,6 +5,7 @@ class NotificationBar {
   static OverlayEntry? _overlayEntry;
   static Timer? _timer;
   static const String _logoAssetPath = 'assets/scafold/sprout.png';
+
   static void show({
     required BuildContext context,
     required String message,
@@ -19,60 +20,95 @@ class NotificationBar {
 
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: 0,
-        left: 0,
-        right: 0,
+        top:
+            MediaQuery.of(context).padding.top + 8, // Position below status bar
+        left: 16,
+        right: 16,
         child: Material(
           color: Colors.transparent,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
-            transform: Matrix4.translationValues(0, 0, 0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isError ? colorScheme.error : colorScheme.primary,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(8),
-                  bottomRight: Radius.circular(8),
+            decoration: BoxDecoration(
+              color: isError ? colorScheme.error : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-              child: SafeArea(
-                bottom: false,
+              ],
+              border: Border.all(color: Colors.grey.withOpacity(0.2), width: 1),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: IntrinsicHeight(
                 child: Row(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: Image.asset(
-                        _logoAssetPath,
-                        width: 24,
-                        height: 24,
-                        color: Colors.white,
-                      ),
+                    // Colored accent bar
+                    Container(
+                      width: 4,
+                      color: isError ? colorScheme.error : colorScheme.primary,
                     ),
-                    // Message
+                    // Content
                     Expanded(
-                      child: Text(
-                        message,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        child: Row(
+                          children: [
+                            // Icon
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: isError
+                                    ? colorScheme.error
+                                    : colorScheme.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Image.asset(
+                                  _logoAssetPath,
+                                  width: 16,
+                                  height: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Message
+                            Expanded(
+                              child: Text(
+                                message,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: isError
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                              ),
+                            ),
+                            // Close button
+                            GestureDetector(
+                              onTap: dismiss,
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 20,
+                                  color: isError
+                                      ? Colors.white.withOpacity(0.8)
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    // Close button
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      color: Colors.white,
-                      onPressed: dismiss,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
                     ),
                   ],
                 ),

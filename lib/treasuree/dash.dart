@@ -141,8 +141,12 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
         onTap: (index) {
           switch (index) {
             case 0:
-              _selectPage('Dashboard', Container());
+             setState(() {
+              _activeTitle = 'Dashboard';
+              _activePage = null; // This will trigger _buildDashboardContent()
+      });
               break;
+
             case 1:
               _selectPage('Registration Fee', const RegistrationFeePage());
               break;
