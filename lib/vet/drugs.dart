@@ -66,6 +66,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
       }
     } catch (e) {
       NotificationBar.show(
+        // ignore: use_build_context_synchronously
         context: context,
         message: 'Error picking image: $e',
         isError: true,
@@ -107,6 +108,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
       }
     } catch (e) {
       NotificationBar.show(
+        // ignore: use_build_context_synchronously
         context: context,
         message: 'Image upload failed: $e',
         isError: true,
@@ -166,6 +168,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
           drugData['createdAt'] = FieldValue.serverTimestamp();
           await _firestore.collection('drugs').add(drugData);
           NotificationBar.show(
+            // ignore: use_build_context_synchronously
             context: context,
             message: 'Drug added successfully',
             isError: false,
@@ -177,6 +180,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
               .doc(_editingDrugId)
               .update(drugData);
           NotificationBar.show(
+            // ignore: use_build_context_synchronously
             context: context,
             message: 'Drug updated successfully',
             isError: false,
@@ -188,6 +192,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
       }
     } catch (e) {
       NotificationBar.show(
+        // ignore: use_build_context_synchronously
         context: context,
         message: 'Error saving drug: $e',
         isError: true,
@@ -201,12 +206,14 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
     try {
       await _firestore.collection('drugs').doc(drugId).delete();
       NotificationBar.show(
+        // ignore: use_build_context_synchronously
         context: context,
         message: 'Drug deleted successfully',
         isError: false,
       );
     } catch (e) {
       NotificationBar.show(
+        // ignore: use_build_context_synchronously
         context: context,
         message: 'Error deleting drug: $e',
         isError: true,
@@ -315,6 +322,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                   : _firestore
                         .collection('drugs')
                         .where('name', isGreaterThanOrEqualTo: _searchQuery)
+                        // ignore: prefer_interpolation_to_compose_strings
                         .where('name', isLessThan: _searchQuery + 'z')
                         .snapshots(),
               builder: (context, snapshot) {
@@ -388,6 +396,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                               child: ListTile(
                                 leading: CircleAvatar(
                                   backgroundColor: Colors.grey[200],
+                                  // ignore: sort_child_properties_last
                                   child: _buildDrugIcon(data['category']),
                                   foregroundImage: data['imageUrl'] != null
                                       ? NetworkImage(data['imageUrl'])

@@ -13,7 +13,6 @@ class WeatherPage extends StatefulWidget {
 
 class _WeatherPageState extends State<WeatherPage> {
   final String apiKey = '62ac58651a0ac978b2e76ed5e3f81921';
-  Position? _currentPosition;
   Map<String, dynamic>? _currentWeather;
   List<dynamic>? _forecast;
   bool _isLoading = true;
@@ -60,9 +59,7 @@ class _WeatherPageState extends State<WeatherPage> {
         desiredAccuracy: LocationAccuracy.best,
       );
 
-      setState(() {
-        _currentPosition = position;
-      });
+      setState(() {});
 
       await _fetchWeatherData(position.latitude, position.longitude);
     } catch (e) {

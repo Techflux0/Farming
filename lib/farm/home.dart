@@ -26,7 +26,7 @@ class _GoatFarmLandingPageState extends State<GoatFarmLandingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    Theme.of(context);
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
 
     return Scaffold(
@@ -150,7 +150,12 @@ class _GoatFarmLandingPageState extends State<GoatFarmLandingPage> {
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              32,
+            ), // Extra bottom padding
             sliver: SliverToBoxAdapter(
               child: Column(
                 children: [
@@ -160,11 +165,14 @@ class _GoatFarmLandingPageState extends State<GoatFarmLandingPage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
-                  _buildPillButton(
-                    text: 'Start Free Trial',
-                    onPressed: () => _navigateToSignup(context),
-                    isFilled: true,
-                    width: double.infinity,
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 15),
+                    child: _buildPillButton(
+                      text: 'Start Free Trial',
+                      onPressed: () => _navigateToSignup(context),
+                      isFilled: true,
+                      width: double.infinity,
+                    ),
                   ),
                 ],
               ),
@@ -235,31 +243,6 @@ class _GoatFarmLandingPageState extends State<GoatFarmLandingPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildCompactTestimonial(String quote, String author) {
-    return Container(
-      width: 200,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '"$quote"',
-            style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "- $author",
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          ),
-        ],
       ),
     );
   }
