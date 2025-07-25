@@ -18,6 +18,8 @@ migrate_working_dir/
 .fetch
 *.fetch-client
 /*.vscode/
+.vscode/
+*.iml
 
 /
 *.iml

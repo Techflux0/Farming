@@ -284,14 +284,21 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                         }
                                       },
                                       items:
-                                          <String>[
+                                          ([
                                             'admin',
                                             'farmer',
                                             'veterinary',
                                             'secretary',
-                                          ].map<DropdownMenuItem<String>>((
-                                            String value,
-                                          ) {
+                                            if (![
+                                              'admin',
+                                              'farmer',
+                                              'veterinary',
+                                              'secretary',
+                                            ].contains(primaryRole))
+                                              primaryRole,
+                                          ].toSet().toList()).map<
+                                            DropdownMenuItem<String>
+                                          >((String value) {
                                             return DropdownMenuItem<String>(
                                               value: value,
                                               child: Text(
