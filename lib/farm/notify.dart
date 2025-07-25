@@ -4,7 +4,7 @@ import 'dart:async';
 class NotificationBar {
   static OverlayEntry? _overlayEntry;
   static Timer? _timer;
-  static const String _logoAssetPath = 'assets/scafold/sprout.png';
+  static const String _logoAssetPath = 'assets/scafold/goat.png';
 
   static void show({
     required BuildContext context,

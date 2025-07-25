@@ -39,7 +39,7 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: false
-  image_path: "assets/launcher/sprout.png"
+  image_path: "assets/launcher/goat.png"
 
 flutter:
   uses-material-design: true
@@ -48,5 +48,6 @@ flutter:
     - assets/launcher/splash.json
     - assets/scafold/sprout.png
     - assets/scafold/google.png
+    - assets/scafold/goat.png
 
 
