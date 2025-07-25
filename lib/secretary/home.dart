@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'communication.dart';
 import 'minutes.dart';
 import 'reports.dart';
+import '../farm/profile.dart';
 
 class SecretaryHomeScreen extends StatefulWidget {
   const SecretaryHomeScreen({super.key});
@@ -11,20 +13,43 @@ class SecretaryHomeScreen extends StatefulWidget {
   State<SecretaryHomeScreen> createState() => _SecretaryHomeScreenState();
 }
 
-// Welcome text will be added inside the build method's widget tree.
-
 class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   int _totalUsers = 0;
   int _veterinarians = 0;
   int _farmers = 0;
   int _members = 0;
   bool _isLoading = true;
+  bool _isSecretary = false;
 
   @override
   void initState() {
     super.initState();
+    _verifySecretaryRole();
     _fetchUserData();
+  }
+
+  Future<void> _verifySecretaryRole() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final doc = await _firestore.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          final data = doc.data() as Map<String, dynamic>;
+          final roles = (data['roles'] as List?)?.cast<String>() ?? ['member'];
+          if (!roles.contains('secretary')) {
+            Navigator.pop(context);
+          } else {
+            setState(() => _isSecretary = true);
+          }
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error verifying role: $e')));
+    }
   }
 
   Future<void> _fetchUserData() async {
@@ -36,10 +61,13 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
       int members = 0;
 
       for (final doc in usersQuery.docs) {
-        final role = doc['role']?.toString() ?? 'member';
-        if (role == 'veterinary') vets++;
-        if (role == 'farmer') farmers++;
-        if (role == 'member') members++;
+        final roles = (doc['roles'] as List?)?.cast<String>() ?? [];
+
+        print('User: ${doc.id}, Roles: $roles');
+
+        if (roles.contains('veterinary')) vets++;
+        if (roles.contains('farmer')) farmers++;
+        if (roles.contains('member') || roles.isEmpty) members++;
       }
 
       setState(() {
@@ -51,115 +79,199 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading user data: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading user data: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Theme.of(context).primaryColor;
-    final Color cardColor = Colors.blue[50]!;
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (!_isSecretary) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Access Denied')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.admin_panel_settings,
+                size: 60,
+                color: Colors.red,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Secretary Authorization Required',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text('Only authorized secretaries can access this page.'),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Return to Home'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Row(
-          children: [
-            const Icon(Icons.verified_user, color: Colors.white),
-            const SizedBox(width: 8),
-            const Text('Secretary Home'),
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Text(
-                'Role: Secretary',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: primaryColor,
+        title: const Text('Secretary Dashboard'),
+        backgroundColor: Colors.green[700],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Card(
+              elevation: 2,
+              margin: const EdgeInsets.only(bottom: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Dashboard cards
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _DashboardCard(
-                          title: 'Communication',
-                          icon: Icons.message,
-                          color: Colors.blue,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => CommunicationHomeScreen()),
-                            );
-                          },
-                        ),
-                        _DashboardCard(
-                          title: 'Reports',
-                          icon: Icons.assignment,
-                          color: Colors.green,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => ReportsHomeScreen()),
-                            );
-                          },
-                        ),
-                        _DashboardCard(
-                          title: 'Minutes',
-                          icon: Icons.event_note,
-                          color: Colors.orange,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => MinutesHomeScreen()),
-                            );
-                          },
-                        ),
-                      ],
+                    Text(
+                      'Welcome, Secretary',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: Colors.green[800],
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
-                    const SizedBox(height: 24),
-                    // Quick stats
-                    Card(
-                      color: cardColor,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'User Summary',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Text('Total Users: $_totalUsers'),
-                            Text('Veterinarians: $_veterinarians'),
-                            Text('Farmers: $_farmers'),
-                            Text('Members: $_members'),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Recent activities summary
+                    const SizedBox(height: 8),
                     const Text(
+                      'Manage communications, reports, and meeting minutes',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Quick stats cards
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              childAspectRatio: 1.0,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              children: [
+                _buildStatCard(
+                  'Total Users',
+                  '$_totalUsers',
+                  Icons.people,
+                  Colors.blue[700]!,
+                ),
+                _buildStatCard(
+                  'Veterinarians',
+                  '$_veterinarians',
+                  Icons.medical_services,
+                  Colors.green[700]!,
+                ),
+                _buildStatCard(
+                  'Farmers',
+                  '$_farmers',
+                  Icons.agriculture,
+                  Colors.orange[700]!,
+                ),
+                _buildStatCard(
+                  'Members',
+                  '$_members',
+                  Icons.person,
+                  Colors.purple[700]!,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Dashboard cards
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildDashboardCard(
+                  title: 'Notice',
+                  icon: Icons.message,
+                  color: Colors.blue,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CommunicationHomeScreen(),
+                    ),
+                  ),
+                ),
+                _buildDashboardCard(
+                  title: 'Reports',
+                  icon: Icons.assignment,
+                  color: Colors.green,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ReportsHomeScreen(),
+                    ),
+                  ),
+                ),
+                _buildDashboardCard(
+                  title: 'Minutes',
+                  icon: Icons.event_note,
+                  color: Colors.orange,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MinutesHomeScreen(),
+                    ),
+                  ),
+                ),
+                _buildDashboardCard(
+                  title: 'Profile',
+                  icon: Icons.person,
+                  color: Colors.purple,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfilePage(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Recent activities
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       'Recent Activities',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green[800],
+                      ),
                     ),
                     const SizedBox(height: 8),
                     _RecentActivitiesCard(firestore: _firestore),
@@ -167,32 +279,62 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
     );
   }
-}
 
-// Dashboard card widget
-class _DashboardCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 30, color: color),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-  const _DashboardCard({
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildDashboardCard({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return Expanded(
-      child: GestureDetector(
+      child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
         child: Card(
           color: color.withOpacity(0.15),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
             child: Column(
@@ -200,7 +342,10 @@ class _DashboardCard extends StatelessWidget {
               children: [
                 Icon(icon, color: color, size: 32),
                 const SizedBox(height: 8),
-                Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+                Text(
+                  title,
+                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
           ),
@@ -210,7 +355,6 @@ class _DashboardCard extends StatelessWidget {
   }
 }
 
-// Recent activities widget (shows last 3 reports)
 class _RecentActivitiesCard extends StatelessWidget {
   final FirebaseFirestore firestore;
   const _RecentActivitiesCard({required this.firestore});
@@ -218,32 +362,66 @@ class _RecentActivitiesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: firestore.collection('reports').orderBy('timestamp', descending: true).limit(3).snapshots(),
+      stream: firestore
+          .collection('reports')
+          .orderBy('timestamp', descending: true)
+          .limit(3)
+          .snapshots(),
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         if (snapshot.hasError) {
-          return const Text('Error loading activities');
+          return Text('Error: ${snapshot.error}');
         }
+
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Text('No recent activities.');
+          return const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Center(
+              child: Text(
+                'No recent activities',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          );
         }
+
         final docs = snapshot.data!.docs;
         return Column(
           children: docs.map((doc) {
             final data = doc.data() as Map<String, dynamic>;
+            final timestamp = data['timestamp'] as Timestamp?;
+
             return ListTile(
-              leading: const Icon(Icons.assignment_turned_in),
-              title: Text(data['reportType'] ?? 'Report'),
-              subtitle: Text(data['content'] ?? ''),
-              trailing: Text(
-                data['timestamp'] != null && data['timestamp'] is Timestamp
-                    ? (data['timestamp'] as Timestamp).toDate().toLocal().toString().split('.').first
-                    : '',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              leading: const Icon(
+                Icons.assignment_turned_in,
+                color: Colors.green,
               ),
+              title: Text(
+                data['reportType']?.toString() ?? 'Untitled Report',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                data['content']?.toString() ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: timestamp != null
+                  ? Text(
+                      _formatDate(timestamp.toDate()),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    )
+                  : null,
             );
           }).toList(),
         );
       },
     );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 }
