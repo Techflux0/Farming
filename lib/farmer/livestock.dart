@@ -72,15 +72,19 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
             .collection('livestocks')
             .doc(_editingLivestockId)
             .update(livestockData);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Livestock updated successfully!')),
+        NotificationBar.show(
+          context: context,
+          message: 'Livestock updated successfully!',
+          isError: false,
         );
       } else {
         // Add new livestock
         livestockData['createdAt'] = FieldValue.serverTimestamp();
         await _firestore.collection('livestocks').add(livestockData);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Livestock added successfully!')),
+        NotificationBar.show(
+          context: context,
+          message: 'Livestock added successfully!',
+          isError: false,
         );
       }
 

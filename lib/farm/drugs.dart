@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class FarmerDrugsPage extends StatefulWidget {
   const FarmerDrugsPage({super.key});
@@ -11,7 +10,6 @@ class FarmerDrugsPage extends StatefulWidget {
 
 class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _searchController = TextEditingController();
 
   bool _loading = false;

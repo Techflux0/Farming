@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../farm/notify.dart';
 
 class VeterinaryLivestockPage extends StatefulWidget {
   const VeterinaryLivestockPage({super.key});
@@ -41,9 +42,11 @@ class _VeterinaryLivestockPageState extends State<VeterinaryLivestockPage> {
       }
     } catch (e) {
       setState(() => _loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error verifying role: $e')));
+      NotificationBar.show(
+        context: context,
+        message: 'Error verifying role: $e',
+        isError: true,
+      );
     }
   }
 
@@ -58,13 +61,17 @@ class _VeterinaryLivestockPageState extends State<VeterinaryLivestockPage> {
         'illnessDescription': description,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Illness status updated successfully')),
+      NotificationBar.show(
+        context: context,
+        message: 'Illness status updated successfully',
+        isError: false,
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error updating record: $e')));
+      NotificationBar.show(
+        context: context,
+        message: 'Error updating record: $e',
+        isError: true,
+      );
     }
   }
 

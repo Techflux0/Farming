@@ -14,11 +14,11 @@ class _UserManagementPageState extends State<UserManagementPage> {
   String _searchQuery = '';
   bool _isLoading = false;
   final Map<String, bool> _expandedUsers = {};
-
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+    _isLoading;
   }
 
   // Yooh i fixed this to only edit 'null' role
