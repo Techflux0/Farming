@@ -128,10 +128,13 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
-                      icon: const Icon(Icons.send),
-                      label: const Text('Send'),
+                      icon: const Icon(Icons.send, color: Colors.white),
+                      label: const Text(
+                        'Send',
+                        style: TextStyle(color: Colors.white),
+                      ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[700],
+                        backgroundColor: primaryColor,
                       ),
                       onPressed: () async {
                         final senderId = 'secretary';
