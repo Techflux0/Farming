@@ -110,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.lightBlue[900],
         elevation: 0,
         actions: [
           Padding(
@@ -182,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.green[700]!, Colors.green[400]!],
+                  colors: [Colors.lightBlue[700]!, Colors.lightBlue[400]!],
                 ),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(20),
@@ -213,7 +213,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Icon(
                     _isEditing ? Icons.save : Icons.edit,
-                    color: Colors.green[700],
+                    color: Colors.lightBlue[700],
                   ),
                 ),
                 onPressed: () {
@@ -332,7 +332,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: Colors.green[700]),
+      leading: Icon(icon, color: Colors.lightBlue[700]),
       title: Text(
         title,
         style: TextStyle(
@@ -385,7 +385,7 @@ class _ProfilePageState extends State<ProfilePage> {
           child: ElevatedButton(
             onPressed: _updateProfile,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[700],
+              backgroundColor: Colors.lightBlue[700],
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             child: const Text('Save Changes'),
@@ -415,7 +415,7 @@ class _ProfilePageState extends State<ProfilePage> {
       case 'admin':
         return Colors.purple;
       case 'farmer':
-        return Colors.green;
+        return Colors.lightBlue;
       case 'veterinary':
         return Colors.blue;
       case 'secretary':

@@ -76,7 +76,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
+        backgroundColor: isError ? Colors.red : Colors.lightBlue,
       ),
     );
   }
@@ -209,10 +209,10 @@ class _UserManagementPageState extends State<UserManagementPage> {
                         onExpansionChanged: (expanded) =>
                             _toggleExpandUser(userId),
                         leading: CircleAvatar(
-                          backgroundColor: Colors.green[100],
+                          backgroundColor: Colors.lightBlue[100],
                           child: Icon(
                             _getRoleIcon(primaryRole),
-                            color: Colors.green[700],
+                            color: Colors.lightBlue[700],
                           ),
                         ),
                         title: Text(
@@ -255,7 +255,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                       ElevatedButton(
                                         onPressed: () => _approveUser(userId),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green,
+                                          backgroundColor: Colors.lightBlue,
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(
                                               8,
@@ -284,6 +284,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                         }
                                       },
                                       items:
+                                          // ignore: prefer_collection_literals
                                           ([
                                             'admin',
                                             'farmer',
@@ -390,8 +391,8 @@ class _UserManagementPageState extends State<UserManagementPage> {
 
     switch (status) {
       case 'approved':
-        backgroundColor = Colors.green[100]!;
-        textColor = Colors.green[800]!;
+        backgroundColor = Colors.lightBlue[100]!;
+        textColor = Colors.lightBlue[800]!;
         displayStatus = 'Approved';
         break;
       case 'pending':
@@ -440,7 +441,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
       case 'admin':
         return Colors.purple;
       case 'farmer':
-        return Colors.green;
+        return Colors.lightBlue;
       case 'veterinary':
         return Colors.blue;
       default:
