@@ -539,7 +539,10 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                               context,
                               '/farm/signup',
                             ),
-                            child: const Text('Sign Up'),
+                            child: const Text(
+                              'Sign Up',
+                              style: TextStyle(color: Colors.blue),
+                            ),
                           ),
                         ],
                       ),

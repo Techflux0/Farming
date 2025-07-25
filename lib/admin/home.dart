@@ -122,7 +122,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green[800],
+                      color: Colors.lightBlue,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -138,7 +138,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         'Total Users',
                         _totalUsers,
                         Icons.group,
-                        Colors.green,
+                        Colors.lightBlue,
                       ),
                       _buildRoleCard(
                         'Veterinarians',
@@ -176,7 +176,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   ElevatedButton(
                     onPressed: _fetchUserData,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[700],
+                      backgroundColor: Colors.lightBlue,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
