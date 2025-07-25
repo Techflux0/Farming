@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'home.dart';
+import '../farm/drugs.dart';
 import 'livestock.dart';
 import '../farm/weather.dart';
-import 'market.dart';
 import '../farm/profile.dart';
 
 class FarmerDashboard extends StatefulWidget {
@@ -16,10 +15,9 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const FarmerHomeScreen(),
+    const FarmerDrugsPage(),
     const LivestockManagementScreen(),
     const WeatherPage(),
-    const MarketManagementScreen(),
     const ProfilePage(),
   ];
 
@@ -39,13 +37,12 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         selectedItemColor: Colors.green[700],
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.medical_information),
+            label: 'Drugs',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Livestock'),
           BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Market',
-          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

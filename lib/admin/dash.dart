@@ -3,7 +3,7 @@ import 'users.dart';
 import 'home.dart';
 import 'livestock.dart';
 import '../farm/weather.dart';
-import 'market.dart';
+import '../farm/drugs.dart';
 import '../farm/profile.dart';
 
 class AdminDashboard extends StatefulWidget {
@@ -20,7 +20,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     const AdminHomeScreen(),
     const LivestockManagementScreen(),
     const WeatherPage(),
-    const MarketManagementScreen(),
+    const FarmerDrugsPage(),
     const UserManagementPage(),
     const ProfilePage(),
   ];
@@ -45,8 +45,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Livestock'),
           BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Market',
+            icon: Icon(Icons.medical_information),
+            label: 'Drugs',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Users'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
