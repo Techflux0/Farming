@@ -89,7 +89,7 @@ class _ProfilePageState extends State<ProfilePage> {
     await FirebaseAuth.instance.signOut();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const HomeLandingPage()),
+      MaterialPageRoute(builder: (context) => const GoatFarmLandingPage()),
       (route) => false,
     );
   }

@@ -344,7 +344,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text('Login'),
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.blue,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -359,7 +359,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.green,
+                color: Colors.blue,
               ),
             ),
             const SizedBox(height: 20),
@@ -477,7 +477,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                               ? null
                               : _loginWithEmailPassword,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[700],
+                            backgroundColor: Colors.blue,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
