@@ -206,7 +206,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w600,
-                        color: Colors.green[800],
+                        color: Colors.lightBlue[800],
                       ),
                     ),
                     const Spacer(),
@@ -216,7 +216,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.green[700],
+                            color: Colors.lightBlue[700],
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -264,7 +264,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                               child: Text(
                                 'Add Livestock',
                                 style: TextStyle(
-                                  color: Colors.green[700],
+                                  color: Colors.lightBlue[700],
                                   fontSize: 16,
                                 ),
                               ),
@@ -326,12 +326,12 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                       width: 40,
                                       height: 40,
                                       decoration: BoxDecoration(
-                                        color: Colors.green[100],
+                                        color: Colors.lightBlue[100],
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(
                                         Icons.pets,
-                                        color: Colors.green[700],
+                                        color: Colors.lightBlue[700],
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -367,7 +367,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                                 _editLivestock(doc),
                                             style: TextButton.styleFrom(
                                               foregroundColor:
-                                                  Colors.green[700],
+                                                  Colors.lightBlue[700],
                                               padding:
                                                   const EdgeInsets.symmetric(
                                                     vertical: 4,
@@ -425,7 +425,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                     _buildDetailItem(
                                       Icons.attach_money,
                                       '${data['price']}',
-                                      Colors.green[600]!,
+                                      Colors.lightBlue[600]!,
                                     ),
                                     _buildDetailItem(
                                       Icons.calendar_today,
@@ -739,15 +739,15 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                   },
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: _gender == 'male'
-                                        ? Colors.green[700]
+                                        ? Colors.lightBlue[700]
                                         : Colors.grey[600],
                                     side: BorderSide(
                                       color: _gender == 'male'
-                                          ? Colors.green[700]!
+                                          ? Colors.lightBlue[700]!
                                           : Colors.grey[300]!,
                                     ),
                                     backgroundColor: _gender == 'male'
-                                        ? Colors.green[50]
+                                        ? Colors.lightBlue[50]
                                         : Colors.transparent,
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 12,
@@ -911,7 +911,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                           ElevatedButton(
                             onPressed: _isLoading ? null : _saveLivestock,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[700],
+                              backgroundColor: Colors.lightBlue[700],
                               foregroundColor: Colors.white,
                               minimumSize: const Size(double.infinity, 50),
                               shape: RoundedRectangleBorder(

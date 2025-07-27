@@ -164,11 +164,14 @@ class _WeatherPageState extends State<WeatherPage> {
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Colors.green[800],
+                              color: Colors.lightBlue[800],
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.refresh, color: Colors.green[700]),
+                            icon: Icon(
+                              Icons.refresh,
+                              color: Colors.lightBlue[700],
+                            ),
                             onPressed: () => _getCurrentLocation(),
                           ),
                         ],
@@ -191,7 +194,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.green[700],
+                                  color: Colors.lightBlue[700],
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -207,7 +210,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                     style: TextStyle(
                                       fontSize: 48,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.green[800],
+                                      color: Colors.lightBlue[800],
                                     ),
                                   ),
                                 ],
@@ -219,7 +222,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                     .toUpperCase(),
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.green[700],
+                                  color: Colors.lightBlue[700],
                                 ),
                               ),
                               const SizedBox(height: 20),
@@ -233,25 +236,25 @@ class _WeatherPageState extends State<WeatherPage> {
                                     Icons.water_drop,
                                     '${_currentWeather!['main']['humidity']}%',
                                     'Humidity',
-                                    Colors.green,
+                                    Colors.lightBlue,
                                   ),
                                   _weatherDetail(
                                     Icons.air,
                                     '${_currentWeather!['wind']['speed']?.round()} km/h',
                                     'Wind',
-                                    Colors.green,
+                                    Colors.lightBlue,
                                   ),
                                   _weatherDetail(
                                     Icons.compress,
                                     '${_currentWeather!['main']['pressure']} hPa',
                                     'Pressure',
-                                    Colors.green,
+                                    Colors.lightBlue,
                                   ),
                                   _weatherDetail(
                                     Icons.visibility,
                                     '${_currentWeather!['visibility'] / 1000} km',
                                     'Visibility',
-                                    Colors.green,
+                                    Colors.lightBlue,
                                   ),
                                 ],
                               ),
@@ -267,7 +270,7 @@ class _WeatherPageState extends State<WeatherPage> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green[800],
+                        color: Colors.lightBlue[800],
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -298,7 +301,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                         _formatTime(forecast['dt']),
                                         style: TextStyle(
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.green[800],
+                                          color: Colors.lightBlue[800],
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -310,7 +313,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                         '${forecast['main']['temp']?.round()}°C',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.green[800],
+                                          color: Colors.lightBlue[800],
                                         ),
                                       ),
                                     ],
@@ -329,7 +332,7 @@ class _WeatherPageState extends State<WeatherPage> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green[800],
+                        color: Colors.lightBlue[800],
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -356,7 +359,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.green[800],
+                                          color: Colors.lightBlue[800],
                                         ),
                                       ),
                                     ),
@@ -367,7 +370,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.green[800],
+                                        color: Colors.lightBlue[800],
                                       ),
                                     ),
                                   ],

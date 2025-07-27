@@ -129,7 +129,7 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text('Secretary Dashboard'),
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.lightBlue[700],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -151,7 +151,7 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
                       'Welcome, Secretary',
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
-                            color: Colors.green[800],
+                            color: Colors.lightBlue[800],
                             fontWeight: FontWeight.bold,
                           ),
                     ),
@@ -184,7 +184,7 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
                   'Veterinarians',
                   '$_veterinarians',
                   Icons.medical_services,
-                  Colors.green[700]!,
+                  Colors.lightBlue[700]!,
                 ),
                 _buildStatCard(
                   'Farmers',
@@ -221,7 +221,7 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
                 _buildDashboardCard(
                   title: 'Reports',
                   icon: Icons.assignment,
-                  color: Colors.green,
+                  color: Colors.lightBlue,
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -280,7 +280,7 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
                       'Recent Activities',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.green[800],
+                        color: Colors.lightBlue[800],
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -407,7 +407,7 @@ class _RecentActivitiesCard extends StatelessWidget {
             return ListTile(
               leading: const Icon(
                 Icons.assignment_turned_in,
-                color: Colors.green,
+                color: Colors.lightBlue,
               ),
               title: Text(
                 data['reportType']?.toString() ?? 'Untitled Report',

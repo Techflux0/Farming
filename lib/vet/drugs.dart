@@ -250,7 +250,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
       case 'Antibiotic':
         return Icon(Icons.medical_services, color: Colors.blue[700]);
       case 'Vaccine':
-        return Icon(Icons.medical_information, color: Colors.green[700]);
+        return Icon(Icons.medical_information, color: Colors.lightBlue[700]);
       case 'Vitamin':
         return Icon(Icons.health_and_safety, color: Colors.orange[700]);
       case 'Antiparasitic':
@@ -268,7 +268,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text('Farm Drugs Management'),
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.lightBlue,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -416,7 +416,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                                   'Kes${data['price'].toStringAsFixed(2)}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.green[700],
+                                    color: Colors.lightBlue,
                                     fontSize: 16,
                                   ),
                                 ),
@@ -610,7 +610,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[700],
+              backgroundColor: Colors.lightBlue,
               foregroundColor: Colors.white,
             ),
             child: Text(_editingDrugId == null ? 'Add Drug' : 'Update Drug'),

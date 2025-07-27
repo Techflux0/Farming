@@ -129,7 +129,7 @@ class _GoatFarmLandingPageState extends State<GoatFarmLandingPage> {
                     icon: Icons.attach_money,
                     title: "Finance",
                     description: "Costs & profits",
-                    color: Colors.green[400]!,
+                    color: Colors.lightBlue[400]!,
                   ),
                 ];
                 return _buildCompactFeatureCard(features[index]);

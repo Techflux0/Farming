@@ -11,7 +11,6 @@ class CommunicationHomeScreen extends StatefulWidget {
 
 class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  // final FirebaseMessaging _messaging = FirebaseMessaging.instance; // Uncomment if using push notifications
 
   String _selectedType = 'Meeting Announcement';
   final TextEditingController _receiverController = TextEditingController();

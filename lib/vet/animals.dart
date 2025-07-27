@@ -122,7 +122,7 @@ class _VeterinaryLivestockPageState extends State<VeterinaryLivestockPage> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text('Veterinary Livestock Records'),
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.lightBlue[700],
       ),
       body: Column(
         children: [
@@ -262,10 +262,7 @@ class _VeterinaryLivestockPageState extends State<VeterinaryLivestockPage> {
                                 ),
                                 _buildDetailRow('Age', '${data['age']} Months'),
                                 _buildDetailRow('Gender', data['gender']),
-                                _buildDetailRow(
-                                  'Price',
-                                  'Kes${data['price']}',
-                                ),
+                                _buildDetailRow('Price', 'Kes${data['price']}'),
                                 if (data['gender'] == 'female')
                                   _buildDetailRow(
                                     'Pregnancy Status',
@@ -306,7 +303,8 @@ class _VeterinaryLivestockPageState extends State<VeterinaryLivestockPage> {
                                               illnessDescription,
                                             ),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green[700],
+                                          backgroundColor:
+                                              Colors.lightBlue[700],
                                           foregroundColor: Colors.white,
                                         ),
                                         child: const Text(
@@ -403,7 +401,7 @@ class _VeterinaryLivestockPageState extends State<VeterinaryLivestockPage> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green[700],
+                  backgroundColor: Colors.lightBlue[700],
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Save Changes'),
