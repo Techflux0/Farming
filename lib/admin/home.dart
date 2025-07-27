@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../farm/notify.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -47,8 +50,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
       for (final doc in usersQuery.docs) {
         final roles = (doc['roles'] as List?)?.cast<String>() ?? [];
-
-        // Count each role only once per user (avoid double-counting)
         final roleSet = roles.toSet();
 
         if (roleSet.contains('veterinary')) vets++;
@@ -69,22 +70,21 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading user data: $e')));
+      NotificationBar.show(
+        context: context,
+        message: 'Error loading user data: $e',
+        isError: true,
+      );
       debugPrint('Error details: $e');
     }
   }
 
   Widget _buildRoleCard(String title, int count, IconData icon, Color color) {
     return Card(
-      elevation: 2,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Colors.lightBlue,
-          width: 1.5,
-        ), // Added lightBlue border
+        side: BorderSide(color: Colors.lightBlue, width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -123,14 +123,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'User Statistics',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.lightBlue,
-                    ),
-                  ),
                   const SizedBox(height: 16),
                   GridView.count(
                     shrinkWrap: true,

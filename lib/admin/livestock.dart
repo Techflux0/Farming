@@ -116,6 +116,10 @@ class _AdminLivestockDashboardState extends State<AdminLivestockDashboard> {
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                    color: Colors.lightBlue,
+                    width: 1,
+                  ),
                 ),
               ),
             ),
@@ -153,10 +157,10 @@ class _UserLivestockCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Colors.lightBlue, width: 2),
+        side: const BorderSide(color: Colors.lightBlue, width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),

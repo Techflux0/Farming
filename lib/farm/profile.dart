@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -110,14 +112,14 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: Colors.lightBlue[900],
+        // backgroundColor: Colors.lightBlue[900],
         elevation: 0,
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: Colors.lightBlue,
                 shape: const CircleBorder(),
                 padding: const EdgeInsets.all(8),
                 elevation: 0,
@@ -137,9 +139,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   _buildProfileHeader(),
                   const SizedBox(height: 24),
                   Card(
-                    elevation: 2,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.lightBlue, width: 1),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
@@ -280,7 +283,7 @@ class _ProfilePageState extends State<ProfilePage> {
           value: _userData['email'] ?? 'Not provided',
           isEditable: false,
         ),
-        const Divider(height: 20),
+        const Divider(height: 20, color: Colors.lightBlue),
         _buildInfoTile(
           icon: Icons.phone,
           title: 'Phone',
@@ -288,7 +291,7 @@ class _ProfilePageState extends State<ProfilePage> {
           controller: _phoneController,
           isEditable: _isEditing,
         ),
-        const Divider(height: 20),
+        const Divider(height: 20, color: Colors.lightBlue),
         _buildInfoTile(
           icon: Icons.phone_android,
           title: 'Secondary Phone',
@@ -297,7 +300,7 @@ class _ProfilePageState extends State<ProfilePage> {
           isEditable: _isEditing,
           optional: true,
         ),
-        const Divider(height: 20),
+        const Divider(height: 20, color: Colors.lightBlue),
         _buildInfoTile(
           icon: Icons.location_on,
           title: 'Address',
@@ -306,7 +309,7 @@ class _ProfilePageState extends State<ProfilePage> {
           isEditable: _isEditing,
           maxLines: 3,
         ),
-        const Divider(height: 20),
+        const Divider(height: 20, color: Colors.lightBlue),
         _buildInfoTile(
           icon: Icons.cake,
           title: 'Age',
@@ -337,7 +340,7 @@ class _ProfilePageState extends State<ProfilePage> {
         title,
         style: TextStyle(
           fontSize: 14,
-          color: Colors.grey[600],
+          color: Colors.black,
           fontWeight: FontWeight.w500,
         ),
       ),

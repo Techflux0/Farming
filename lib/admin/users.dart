@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../farm/notify.dart';
 
 class UserManagementPage extends StatefulWidget {
   const UserManagementPage({super.key});
@@ -37,9 +40,16 @@ class _UserManagementPageState extends State<UserManagementPage> {
         'roles': roles,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      _showSnackBar('User role updated to $newRole');
+      NotificationBar.show(
+        context: context,
+        message: 'User role updated successfully',
+      );
     } catch (e) {
-      _showSnackBar('Error updating role: ${e.toString()}', isError: true);
+      NotificationBar.show(
+        context: context,
+        message: 'Error updating role: ${e.toString()}',
+        isError: true,
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -52,9 +62,16 @@ class _UserManagementPageState extends State<UserManagementPage> {
         'membership_status': 'approved',
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      _showSnackBar('User approved successfully');
+      NotificationBar.show(
+        context: context,
+        message: 'User approved successfully',
+      );
     } catch (e) {
-      _showSnackBar('Error approving user: ${e.toString()}', isError: true);
+      NotificationBar.show(
+        context: context,
+        message: 'Error approving user: ${e.toString()}',
+        isError: true,
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -64,21 +81,19 @@ class _UserManagementPageState extends State<UserManagementPage> {
     setState(() => _isLoading = true);
     try {
       await _firestore.collection('users').doc(userId).delete();
-      _showSnackBar('User deleted successfully');
+      NotificationBar.show(
+        context: context,
+        message: 'User deleted successfully',
+      );
     } catch (e) {
-      _showSnackBar('Error deleting user: ${e.toString()}', isError: true);
+      NotificationBar.show(
+        context: context,
+        message: 'Error deleting user: ${e.toString()}',
+        isError: true,
+      );
     } finally {
       setState(() => _isLoading = false);
     }
-  }
-
-  void _showSnackBar(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.lightBlue,
-      ),
-    );
   }
 
   void _toggleExpandUser(String userId) {
@@ -96,9 +111,10 @@ class _UserManagementPageState extends State<UserManagementPage> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Card(
-              elevation: 2,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
+                side: const BorderSide(color: Colors.lightBlue, width: 1),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -199,9 +215,13 @@ class _UserManagementPageState extends State<UserManagementPage> {
                         horizontal: 16.0,
                         vertical: 8.0,
                       ),
-                      elevation: 2,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
+                        side: const BorderSide(
+                          color: Colors.lightBlue,
+                          width: 1,
+                        ),
                       ),
                       child: ExpansionTile(
                         key: Key(userId),
@@ -252,25 +272,38 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     if (status == 'pending')
-                                      ElevatedButton(
-                                        onPressed: () => _approveUser(userId),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.lightBlue,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              8,
+                                      SizedBox(
+                                        height: 32,
+                                        child: ElevatedButton(
+                                          onPressed: () => _approveUser(userId),
+                                          style: ElevatedButton.styleFrom(
+                                            minimumSize: const Size(70, 32),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                            ),
+                                            backgroundColor: Colors.lightBlue,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              side: const BorderSide(
+                                                color: Colors.lightBlue,
+                                                width: 1,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        child: const Text(
-                                          'Approve',
-                                          style: TextStyle(color: Colors.white),
+                                          child: const Text(
+                                            'Approve',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.white,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     DropdownButton<String>(
                                       value: primaryRole,
                                       icon: const Icon(Icons.arrow_drop_down),
-                                      elevation: 16,
+                                      elevation: 10,
                                       style: const TextStyle(
                                         color: Colors.black,
                                       ),
@@ -314,34 +347,109 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                             );
                                           }).toList(),
                                     ),
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.delete,
-                                        color: Colors.red,
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        minimumSize: const Size(70, 32),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                        ),
+                                        backgroundColor: Colors.red,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          side: const BorderSide(
+                                            color: Colors.red,
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Delete',
+                                        style: TextStyle(color: Colors.white),
                                       ),
                                       onPressed: () {
                                         showDialog(
                                           context: context,
                                           builder: (context) => AlertDialog(
-                                            title: const Text('Confirm Delete'),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              side: const BorderSide(
+                                                color: Colors.lightBlue,
+                                                width: 1,
+                                              ),
+                                            ),
+                                            title: Center(
+                                              child: Text(
+                                                'Confirm Delete',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF1976D2),
+                                                ),
+                                              ),
+                                            ),
                                             content: Text(
-                                              'Delete user $email?',
+                                              'Are you sure you want to delete user "$email"?',
+                                              style: const TextStyle(
+                                                color: Colors.black54,
+                                                fontSize: 15,
+                                              ),
                                             ),
                                             actions: [
                                               TextButton(
-                                                onPressed: () =>
-                                                    Navigator.pop(context),
-                                                child: const Text('Cancel'),
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor:
+                                                      Colors.lightBlue[700],
+                                                  backgroundColor:
+                                                      Colors.lightBlue[50],
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 18,
+                                                        vertical: 8,
+                                                      ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                ),
+                                                onPressed: () => Navigator.pop(
+                                                  context,
+                                                  false,
+                                                ),
+                                                child: const Text(
+                                                  'Cancel',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
                                               ),
                                               TextButton(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                  backgroundColor:
+                                                      Colors.red[700],
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 18,
+                                                        vertical: 8,
+                                                      ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                ),
                                                 onPressed: () {
-                                                  Navigator.pop(context);
-                                                  _deleteUser(userId);
+                                                  Navigator.pop(context, true);
                                                 },
                                                 child: const Text(
                                                   'Delete',
                                                   style: TextStyle(
-                                                    color: Colors.red,
+                                                    fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
                                               ),

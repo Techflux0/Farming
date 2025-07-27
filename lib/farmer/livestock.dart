@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -122,18 +124,53 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Delete'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.lightBlue, width: 1),
+        ),
+        title: Center(
+          child: Text(
+            'Confirm Delete',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1976D2),
+            ),
+          ),
+        ),
         content: const Text(
-          'Are you sure you want to delete this livestock record?',
+          'Are you sure you want to delete this goat record?',
+          style: TextStyle(color: Colors.black54, fontSize: 15),
         ),
         actions: [
           TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.lightBlue[700],
+              backgroundColor: Colors.lightBlue[50],
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
           ),
           TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.red[700],
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
           ),
         ],
       ),
@@ -284,7 +321,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Text(
-                              'Your Livestock (${livestock.length})',
+                              'You have ${livestock.length} goats',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -304,7 +341,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.grey[200]!,
+                              color: Colors.lightBlue,
                               width: 1,
                             ),
                             boxShadow: [
@@ -361,16 +398,17 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                     Column(
                                       children: [
                                         SizedBox(
-                                          width: 80,
+                                          width: 60,
                                           child: TextButton(
                                             onPressed: () =>
                                                 _editLivestock(doc),
                                             style: TextButton.styleFrom(
-                                              foregroundColor:
+                                              foregroundColor: Colors.white,
+                                              backgroundColor:
                                                   Colors.lightBlue[700],
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                    vertical: 4,
+                                                    vertical: 2,
                                                   ),
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -379,21 +417,22 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                             ),
                                             child: const Text(
                                               'Edit',
-                                              style: TextStyle(fontSize: 14),
+                                              style: TextStyle(fontSize: 10),
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
+                                        const SizedBox(height: 2),
                                         SizedBox(
-                                          width: 80,
+                                          width: 60,
                                           child: TextButton(
                                             onPressed: () =>
                                                 _deleteLivestock(doc.id),
                                             style: TextButton.styleFrom(
-                                              foregroundColor: Colors.red[600],
+                                              foregroundColor: Colors.white,
+                                              backgroundColor: Colors.red[700],
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                    vertical: 4,
+                                                    vertical: 2,
                                                   ),
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -402,7 +441,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                             ),
                                             child: const Text(
                                               'Delete',
-                                              style: TextStyle(fontSize: 14),
+                                              style: TextStyle(fontSize: 10),
                                             ),
                                           ),
                                         ),
@@ -532,10 +571,14 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                 maxChildSize: 0.9,
                 builder: (_, controller) {
                   return Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(20),
+                        bottom: Radius.circular(0),
+                      ),
+                      border: Border(
+                        top: BorderSide(color: Colors.lightBlue, width: 1),
                       ),
                     ),
                     padding: const EdgeInsets.all(16),

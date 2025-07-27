@@ -54,11 +54,6 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text('Farm Drugs'),
-        backgroundColor: Colors.lightBlue[700],
-        actions: [],
-      ),
       body: Column(
         children: [
           Padding(
@@ -154,9 +149,10 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                         horizontal: 16.0,
                         vertical: 8.0,
                       ),
-                      elevation: 2,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(color: Colors.lightBlue, width: 1),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -166,10 +162,10 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
                               child: ListTile(
                                 leading: CircleAvatar(
                                   backgroundColor: Colors.grey[200],
-                                  child: _buildDrugIcon(data['category']),
                                   foregroundImage: data['imageUrl'] != null
                                       ? NetworkImage(data['imageUrl'])
                                       : null,
+                                  child: _buildDrugIcon(data['category']),
                                 ),
                                 title: Text(
                                   data['name'],
@@ -217,36 +213,84 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(drug['name']),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (drug['imageUrl'] != null)
-                Center(
-                  child: Image.network(
-                    drug['imageUrl'],
-                    height: 150,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              const SizedBox(height: 16),
-              _buildDetailItem('Category', drug['category']),
-              _buildDetailItem('Description', drug['description']),
-              _buildDetailItem('Dosage', drug['dosage']),
-              _buildDetailItem(
-                'Price',
-                'Kes${drug['price'].toStringAsFixed(2)}',
-              ),
-              _buildDetailItem('Quantity', drug['quantity'].toString()),
-            ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.lightBlue[700]!, width: 2),
+        ),
+        title: Center(
+          child: Text(
+            drug['name'],
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+            textAlign: TextAlign.center,
           ),
         ),
+        content: SizedBox(
+          width: 550, // Increase dialog width
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (drug['imageUrl'] != null)
+                  Center(
+                    child: Image.network(
+                      drug['imageUrl'],
+                      height: 150,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                _buildDetailItem('Category', drug['category']),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Description',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[700],
+                          fontSize: 18,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        drug['description'],
+                        style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+                _buildDetailItem('Dosage', drug['dosage']),
+                _buildDetailItem(
+                  'Price',
+                  'Kes${drug['price'].toStringAsFixed(2)}',
+                ),
+                _buildDetailItem('Quantity', drug['quantity'].toString()),
+              ],
+            ),
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.end, // Button close to content
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.lightBlue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('close'),
+            ),
           ),
         ],
       ),

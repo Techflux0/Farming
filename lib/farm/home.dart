@@ -132,7 +132,13 @@ class _GoatFarmLandingPageState extends State<GoatFarmLandingPage> {
                     color: Colors.lightBlue[400]!,
                   ),
                 ];
-                return _buildCompactFeatureCard(features[index]);
+                return Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.lightBlue[100]!, width: 1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: _buildCompactFeatureCard(features[index]),
+                );
               }, childCount: 4),
             ),
           ),

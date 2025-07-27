@@ -54,6 +54,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
       _handleAuthError(e);
     } catch (e) {
       NotificationBar.show(
+        // ignore: use_build_context_synchronously
         context: context,
         message: e.toString(),
         isError: true,
@@ -232,9 +233,10 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
           child: AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: Colors.lightBlue, width: 2),
             ),
             title: const Text(
-              'Choose Login Role',
+              'Choose Login',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 18,
