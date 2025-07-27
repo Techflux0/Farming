@@ -22,7 +22,6 @@ class _VetDashboardState extends State<VetDashboard> {
     const ChatPage(),
     const ProfilePage(),
   ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
