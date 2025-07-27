@@ -386,9 +386,10 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                 ),
               ),
             Card(
-              elevation: 2,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: Colors.lightBlue, width: 2),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -402,8 +403,10 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           labelText: 'Email',
                           prefixIcon: const Icon(Icons.email),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.lightBlue,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -423,7 +426,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 18),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
@@ -441,8 +444,10 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                             ),
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.lightBlue,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -459,7 +464,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 5),
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
@@ -468,7 +473,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           child: const Text('Forgot Password?'),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
                         height: 48,
@@ -489,25 +494,25 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                               : const Text(
                                   'Login',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       const Text('OR', style: TextStyle(color: Colors.grey)),
                       const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
-                        height: 48,
+                        height: 40,
                         child: OutlinedButton(
                           onPressed: _isLoading ? null : _signInWithGoogle,
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.grey),
+                            side: const BorderSide(color: Colors.lightBlue),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           child: Row(

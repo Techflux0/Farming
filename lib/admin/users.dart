@@ -290,11 +290,13 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                             'farmer',
                                             'veterinary',
                                             'secretary',
+                                            'null',
                                             if (![
                                               'admin',
                                               'farmer',
                                               'veterinary',
                                               'secretary',
+                                              'null',
                                             ].contains(primaryRole))
                                               primaryRole,
                                           ].toSet().toList()).map<
