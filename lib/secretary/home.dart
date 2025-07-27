@@ -5,6 +5,7 @@ import 'communication.dart';
 import 'minutes.dart';
 import 'reports.dart';
 import '../farm/profile.dart';
+import '../farm/chat.dart';
 
 class SecretaryHomeScreen extends StatefulWidget {
   const SecretaryHomeScreen({super.key});
@@ -208,7 +209,7 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
               children: [
                 _buildDashboardCard(
                   title: 'Notice',
-                  icon: Icons.message,
+                  icon: Icons.notifications,
                   color: Colors.blue,
                   onTap: () => Navigator.push(
                     context,
@@ -237,6 +238,15 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
                     MaterialPageRoute(
                       builder: (context) => const MinutesHomeScreen(),
                     ),
+                  ),
+                ),
+                _buildDashboardCard(
+                  title: 'Chat',
+                  icon: Icons.chat,
+                  color: Colors.blue,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ChatPage()),
                   ),
                 ),
                 _buildDashboardCard(

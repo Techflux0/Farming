@@ -79,7 +79,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   Widget _buildRoleCard(String title, int count, IconData icon, Color color) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: Colors.lightBlue,
+          width: 1.5,
+        ), // Added lightBlue border
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -173,17 +179,20 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _fetchUserData,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.lightBlue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _fetchUserData,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.lightBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
+                      child: const Text('Refresh'),
                     ),
-                    child: const Text('Refresh'),
                   ),
                 ],
               ),

@@ -5,6 +5,7 @@ import 'livestock.dart';
 import '../farm/weather.dart';
 import '../farm/drugs.dart';
 import '../farm/profile.dart';
+import '../farm/chat.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -18,10 +19,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   final List<Widget> _screens = [
     const AdminHomeScreen(),
-    const LivestockManagementScreen(),
+    const AdminLivestockDashboard(),
     const WeatherPage(),
     const FarmerDrugsPage(),
     const UserManagementPage(),
+    const ChatPage(),
     const ProfilePage(),
   ];
 
@@ -49,6 +51,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             label: 'Drugs',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Users'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

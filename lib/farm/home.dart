@@ -166,7 +166,7 @@ class _GoatFarmLandingPageState extends State<GoatFarmLandingPage> {
                   ),
                   const SizedBox(height: 12),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 15),
+                    padding: const EdgeInsets.only(bottom: 30),
                     child: _buildPillButton(
                       text: 'Start Free Trial',
                       onPressed: () => _navigateToSignup(context),

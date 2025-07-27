@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'home.dart';
 import 'animals.dart';
 import '../farm/weather.dart';
-import 'payment.dart';
 import '../farm/profile.dart';
 import 'drugs.dart';
+import '../farm/chat.dart';
 
 class VetDashboard extends StatefulWidget {
   const VetDashboard({super.key});
@@ -17,11 +16,10 @@ class _VetDashboardState extends State<VetDashboard> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const VetHomeScreen(),
     const VeterinaryLivestockPage(),
     const WeatherPage(),
-    const PaymentPage(),
     const FarmerDrugsPage(),
+    const ChatPage(),
     const ProfilePage(),
   ];
 
@@ -41,14 +39,13 @@ class _VetDashboardState extends State<VetDashboard> {
         selectedItemColor: Colors.green[700],
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Animals'),
           BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
-          BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payments'),
           BottomNavigationBarItem(
             icon: Icon(Icons.medical_services),
             label: 'Drugs',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
