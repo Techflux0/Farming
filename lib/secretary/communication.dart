@@ -72,7 +72,7 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
             ),
           ],
         ),
-        backgroundColor: primaryColor,
+        backgroundColor: Colors.lightBlue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -133,7 +133,7 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                         style: TextStyle(color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
+                        backgroundColor: Colors.lightBlue,
                       ),
                       onPressed: () async {
                         final senderId = 'secretary';
@@ -193,7 +193,7 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                                 : data['type'] == 'Deadline Notification'
                                 ? Icons.timer
                                 : Icons.campaign,
-                            color: primaryColor,
+                            color: Colors.lightBlue,
                           ),
                           title: Text(data['type'] ?? 'Message'),
                           subtitle: Text(data['message'] ?? ''),
