@@ -164,7 +164,7 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(width: 6), // Reduced gap
+                        const SizedBox(width: 6), 
                         Expanded(
                           child: ElevatedButton.icon(
                             icon: const Icon(Icons.clear, color: Colors.white),
