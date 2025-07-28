@@ -1,9 +1,13 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'monthly.dart';
 import 'registration.dart';
 import 'other_payments.dart';
+import '../farm/notify.dart';
+import '../farm/chat.dart';
+import '../farm/profile.dart';
 
 class TreasurerDashboard extends StatefulWidget {
   const TreasurerDashboard({super.key});
@@ -14,7 +18,6 @@ class TreasurerDashboard extends StatefulWidget {
 
 class _TreasurerDashboardState extends State<TreasurerDashboard> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Widget? _activePage;
   String _activeTitle = 'Dashboard';
@@ -29,36 +32,13 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
   @override
   void initState() {
     super.initState();
-    _verifyTreasurerRole();
     _fetchSummaryData();
-  }
-
-  Future<void> _verifyTreasurerRole() async {
-    try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        final doc = await _firestore.collection('users').doc(user.uid).get();
-        if (doc.exists) {
-          final data = doc.data() as Map<String, dynamic>;
-          final roles = (data['roles'] as List?)?.cast<String>() ?? ['member'];
-          if (!roles.contains('treasurer')) {
-            Navigator.pop(context);
-          }
-        }
-      }
-      setState(() => _loading = false);
-    } catch (e) {
-      setState(() => _loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error verifying role: $e')));
-    }
   }
 
   Future<void> _fetchSummaryData() async {
     try {
       final regSnap = await _firestore.collection('registration_fees').get();
-      final monthlySnap = await _firestore.collection('monthly_payments').get();
+      final monthlySnap = await _firestore.collection('monthly_payment').get();
       final otherSnap = await _firestore.collection('other_payments').get();
 
       double regTotal = 0;
@@ -85,9 +65,13 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
         _otherPaymentsAmount = otherTotal;
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error fetching data: $e')));
+      NotificationBar.show(
+        context: context,
+        message: 'Error fetching summary data: ${e.toString()}',
+        isError: true,
+      );
+    } finally {
+      setState(() => _loading = false);
     }
   }
 
@@ -101,8 +85,7 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
   double get totalCollected =>
       _regFeeAmount + _monthlyFeeAmount + _otherPaymentsAmount;
   int get totalMembersPaid => _regFeeMembers + _monthlyFeeMembers;
-  double get estimatedTotalDue =>
-      totalMembersPaid * 500; // Adjust calculation as needed
+  double get estimatedTotalDue => totalMembersPaid * 500;
   double get totalOutstanding => estimatedTotalDue - totalCollected;
 
   @override
@@ -115,7 +98,7 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text('Treasurer - $_activeTitle'),
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.lightBlue[800],
         actions: [
           if (_activeTitle != 'Dashboard')
             IconButton(
@@ -129,7 +112,7 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.green[800],
+        selectedItemColor: Colors.lightBlue[800],
         unselectedItemColor: Colors.grey[600],
         currentIndex: _activeTitle == 'Dashboard'
             ? 0
@@ -141,10 +124,10 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
         onTap: (index) {
           switch (index) {
             case 0:
-             setState(() {
-              _activeTitle = 'Dashboard';
-              _activePage = null; // This will trigger _buildDashboardContent()
-      });
+              setState(() {
+                _activeTitle = 'Dashboard';
+                _activePage = null;
+              });
               break;
 
             case 1:
@@ -155,6 +138,12 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
               break;
             case 3:
               _selectPage('Other Payments', const OtherPaymentPage());
+              break;
+            case 4:
+              _selectPage('Chat', const ChatPage());
+              break;
+            case 5:
+              _selectPage('Profile', const ProfilePage());
               break;
           }
         },
@@ -172,6 +161,8 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
             label: 'Monthly',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Other'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
@@ -184,9 +175,10 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Card(
-            elevation: 2,
+            elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.lightBlue, width: 1),
             ),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -196,7 +188,7 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
                   Text(
                     'Financial Summary',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Colors.green[800],
+                      color: Colors.lightBlue[800]!,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -205,7 +197,7 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
                     'Total Collected',
                     'Ksh ${totalCollected.toStringAsFixed(2)}',
                     Icons.attach_money,
-                    Colors.green,
+                    Colors.lightBlue[800]!,
                   ),
                   _buildSummaryTile(
                     'Total Outstanding',
@@ -291,8 +283,11 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
     Color color,
   ) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: const BorderSide(color: Colors.lightBlue, width: 1),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

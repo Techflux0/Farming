@@ -1,6 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../farm/notify.dart';
 
 class AdminLivestockDashboard extends StatefulWidget {
   const AdminLivestockDashboard({super.key});
@@ -12,7 +14,6 @@ class AdminLivestockDashboard extends StatefulWidget {
 
 class _AdminLivestockDashboardState extends State<AdminLivestockDashboard> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = true;
   List<Map<String, dynamic>> _userStats = [];
   List<Map<String, dynamic>> _filteredUserStats = [];
@@ -96,8 +97,10 @@ class _AdminLivestockDashboardState extends State<AdminLivestockDashboard> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching data: ${e.toString()}')),
+      NotificationBar.show(
+        context: context,
+        message: 'Error fetching data: ${e.toString()}',
+        isError: true,
       );
     }
   }

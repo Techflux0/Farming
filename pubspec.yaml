@@ -28,6 +28,7 @@ dependencies:
   share_plus: ^11.0.0
   pdf: ^3.11.3
   printing: ^5.14.2
+  audioplayers: ^6.5.0
 
 
 dev_dependencies:
@@ -49,5 +50,7 @@ flutter:
     - assets/scafold/sprout.png
     - assets/scafold/google.png
     - assets/scafold/goat.png
+    - assets/sounds/notify.mp3
+    - assets/sounds/send.mp3
 
 

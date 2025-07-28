@@ -61,7 +61,7 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
     final paymentData = {
       'name': _nameController.text.trim(),
       'type': _paymentTypeController.text.trim(),
-      'amount': double.tryParse(_amountController.text.trim()) ?? 0.0,
+      'amount_paid': double.tryParse(_amountController.text.trim()) ?? 0.0,
       'date': DateTime.now().toString().substring(0, 10),
       'timestamp': FieldValue.serverTimestamp(),
     };
@@ -104,7 +104,7 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
     final payment = _filteredPayments[index];
     _nameController.text = payment['name'];
     _paymentTypeController.text = payment['type'];
-    _amountController.text = payment['amount'].toString();
+    _amountController.text = payment['amount_paid'].toString();
 
     showDialog(
       context: context,
@@ -117,7 +117,8 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
               final updatedData = {
                 'name': _nameController.text.trim(),
                 'type': _paymentTypeController.text.trim(),
-                'amount': double.tryParse(_amountController.text.trim()) ?? 0.0,
+                'amount_paid':
+                    double.tryParse(_amountController.text.trim()) ?? 0.0,
                 'date': DateTime.now().toString().substring(0, 10),
                 'timestamp': FieldValue.serverTimestamp(),
               };
@@ -157,8 +158,10 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
     );
   }
 
-  double get _totalAmount =>
-      _filteredPayments.fold(0.0, (sum, item) => sum + (item['amount'] ?? 0.0));
+  double get _totalAmount => _filteredPayments.fold(
+    0.0,
+    (sum, item) => sum + (item['amount_paid'] ?? 0.0),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -259,7 +262,7 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
                             '${payment['name']} - ${payment['type']}',
                           ),
                           subtitle: Text(
-                            'Ksh ${payment['amount']} on ${payment['date']}',
+                            'Ksh ${payment['amount_paid']} on ${payment['date']}',
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,

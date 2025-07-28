@@ -1,8 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -196,7 +196,11 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: _sendMessage,
+                  onPressed: () async {
+                    await _sendMessage();
+                    final player = AudioPlayer();
+                    await player.play(AssetSource('sounds/send.mp3'));
+                  },
                 ),
               ],
             ),
