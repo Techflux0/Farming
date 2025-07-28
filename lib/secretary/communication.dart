@@ -239,8 +239,8 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.orange),
+                              TextButton(
+                                child: const Text('Edit', style: TextStyle(color: Colors.orange)),
                                 onPressed: () async {
                                   final TextEditingController editController =
                                       TextEditingController(text: data['message']);
@@ -251,8 +251,7 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                                       content: TextField(
                                         controller: editController,
                                         maxLines: 2,
-                                        decoration:
-                                            const InputDecoration(labelText: 'Message'),
+                                        decoration: const InputDecoration(labelText: 'Message'),
                                       ),
                                       actions: [
                                         TextButton(
@@ -278,8 +277,9 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                                   }
                                 },
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                              const SizedBox(width: 8),
+                              TextButton(
+                                child: const Text('Delete', style: TextStyle(color: Colors.red)),
                                 onPressed: () async {
                                   final confirmed = await showDialog<bool>(
                                     context: context,
