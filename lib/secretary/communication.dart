@@ -12,7 +12,7 @@ class CommunicationHomeScreen extends StatefulWidget {
 class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  String _selectedType = 'Meeting Announcement';
+  String? _selectedType; // Make it nullable
   final TextEditingController _receiverController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
 
@@ -45,8 +45,7 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Theme.of(context).primaryColor;
-    final Color cardColor = Colors.blue[50]!;
+    final Color cardColor = const Color.fromARGB(255, 222, 231, 235);
 
     return Scaffold(
       appBar: AppBar(
@@ -91,6 +90,10 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                       value: _selectedType,
                       items: const [
                         DropdownMenuItem(
+                          value: null,
+                          child: Text('Select Message Type', style: TextStyle(color: Colors.grey)),
+                        ),
+                        DropdownMenuItem(
                           value: 'Meeting Announcement',
                           child: Text('Meeting Announcement'),
                         ),
@@ -105,7 +108,7 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                       ],
                       onChanged: (value) {
                         setState(() {
-                          _selectedType = value!;
+                          _selectedType = value;
                         });
                       },
                       decoration: const InputDecoration(
@@ -126,32 +129,60 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                       maxLines: 2,
                     ),
                     const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.send, color: Colors.white),
-                      label: const Text(
-                        'Send',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.lightBlue,
-                      ),
-                      onPressed: () async {
-                        final senderId = 'secretary';
-                        final receiverId = _receiverController.text.trim();
-                        final message = _messageController.text.trim();
-                        if (message.isNotEmpty) {
-                          await sendMessage(
-                            senderId,
-                            receiverId,
-                            message,
-                            _selectedType,
-                          );
-                          _messageController.clear();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Message sent!')),
-                          );
-                        }
-                      },
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.send, color: Colors.white),
+                            label: const Text(
+                              'Send',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.lightBlue,
+                            ),
+                            onPressed: () async {
+                              final senderId = 'secretary';
+                              final receiverId = _receiverController.text.trim();
+                              final message = _messageController.text.trim();
+                              if (message.isNotEmpty && _selectedType != null) {
+                                await sendMessage(
+                                  senderId,
+                                  receiverId,
+                                  message,
+                                  _selectedType!,
+                                );
+                                _messageController.clear();
+                                _receiverController.clear();
+                                setState(() {
+                                  _selectedType = null;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Message sent!')),
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 50),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.clear, color: Colors.white),
+                          label: const Text(
+                            'Clear',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.lightBlue,
+                          ),
+                          onPressed: () {
+                            _messageController.clear();
+                            _receiverController.clear();
+                            setState(() {
+                              _selectedType = null;
+                            });
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -184,33 +215,98 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                   return ListView.builder(
                     itemCount: docs.length,
                     itemBuilder: (context, index) {
-                      final data = docs[index].data() as Map<String, dynamic>;
+                      final doc = docs[index];
+                      final data = doc.data() as Map<String, dynamic>;
                       return Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(
+                            color: Colors.lightBlue, 
+                            width: 1,
+                          ),
+                        ),
                         child: ListTile(
                           leading: Icon(
                             data['type'] == 'Meeting Announcement'
                                 ? Icons.event
                                 : data['type'] == 'Deadline Notification'
-                                ? Icons.timer
-                                : Icons.campaign,
+                                    ? Icons.timer
+                                    : Icons.campaign,
                             color: Colors.lightBlue,
                           ),
                           title: Text(data['type'] ?? 'Message'),
                           subtitle: Text(data['message'] ?? ''),
-                          trailing: Text(
-                            data['timestamp'] != null &&
-                                    data['timestamp'] is Timestamp
-                                ? (data['timestamp'] as Timestamp)
-                                      .toDate()
-                                      .toLocal()
-                                      .toString()
-                                      .split('.')
-                                      .first
-                                : '',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.orange),
+                                onPressed: () async {
+                                  final TextEditingController editController =
+                                      TextEditingController(text: data['message']);
+                                  final result = await showDialog<String>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Edit Message'),
+                                      content: TextField(
+                                        controller: editController,
+                                        maxLines: 2,
+                                        decoration:
+                                            const InputDecoration(labelText: 'Message'),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, editController.text),
+                                          child: const Text('Save'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (result != null && result.trim().isNotEmpty) {
+                                    await _firestore
+                                        .collection('messages')
+                                        .doc(doc.id)
+                                        .update({'message': result.trim()});
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Message updated!')),
+                                    );
+                                  }
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Confirm Delete'),
+                                      content: const Text('Are you sure you want to delete this message?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, true),
+                                          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed == true) {
+                                    await _firestore.collection('messages').doc(doc.id).delete();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Message deleted!')),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       );
