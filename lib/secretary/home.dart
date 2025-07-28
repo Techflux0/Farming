@@ -302,8 +302,14 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
     Color color,
   ) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(
+          color: Colors.lightBlue, // Use the card's color for the border
+          width: 1,     // Set border width
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
