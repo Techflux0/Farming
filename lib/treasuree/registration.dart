@@ -1,6 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../farm/notify.dart';
 
 class RegistrationFeePage extends StatefulWidget {
   const RegistrationFeePage({super.key});
@@ -61,26 +64,30 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
             .collection('registration_fees')
             .doc(_editingDoc!.id)
             .update(data);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('✔ Record updated successfully')),
+        NotificationBar.show(
+          context: context,
+          message: '✔ Registration fee updated',
+          isError: false,
         );
       } else {
         // Create
         await FirebaseFirestore.instance
             .collection('registration_fees')
             .add(data);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('✔ Registration fee recorded')),
+        NotificationBar.show(
+          context: context,
+          message: '✔ Registration fee added',
+          isError: false,
         );
       }
 
       _resetForm();
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('❌ Error: $e')));
+      NotificationBar.show(
+        context: context,
+        message: 'Error: $e',
+        isError: true,
+      );
     } finally {
       setState(() => _isSubmitting = false);
     }
@@ -112,10 +119,11 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
         .collection('registration_fees')
         .doc(id)
         .delete();
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('🗑️ Record deleted')));
+    NotificationBar.show(
+      context: context,
+      message: '🗑️ Record deleted',
+      isError: false,
+    );
   }
 
   @override
@@ -130,7 +138,6 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('💰 Registration Fee')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -144,31 +151,43 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                     decoration: const InputDecoration(
                       labelText: 'Member Name',
                       border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.person),
+                      prefixIcon: Icon(Icons.person, color: Colors.lightBlue),
                     ),
                     validator: (value) =>
                         value!.isEmpty ? 'Enter member name' : null,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 15),
                   TextFormField(
                     controller: _amountPayableController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Amount Payable (KES)',
                       border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.money),
+                      prefixIcon: Icon(
+                        Icons.monetization_on,
+                        color: Colors.lightBlue,
+                      ),
                     ),
                     validator: (value) =>
                         value!.isEmpty ? 'Enter amount payable' : null,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 15),
                   TextFormField(
                     controller: _amountPaidController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Amount Paid (KES)',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.payment),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: Colors.lightBlue,
+                          width: 1,
+                        ),
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.monetization_on,
+                        color: Colors.lightBlue,
+                      ),
                     ),
                     onChanged: (_) => setState(() {}),
                     validator: (value) =>
@@ -206,7 +225,7 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                     icon: Icon(_editingDoc == null ? Icons.add : Icons.update),
                     label: Text(_editingDoc == null ? 'Submit' : 'Update'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: Colors.lightBlue,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
@@ -232,6 +251,7 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                 fillColor: Colors.grey.shade200,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
+
                   borderSide: BorderSide.none,
                 ),
               ),

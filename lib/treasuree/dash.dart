@@ -194,20 +194,20 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
                   ),
                   const SizedBox(height: 16),
                   _buildSummaryTile(
-                    'Total Collected',
-                    'Ksh ${totalCollected.toStringAsFixed(2)}',
-                    Icons.attach_money,
+                    'Total Collected'.toUpperCase(),
+                    'Ksh: ${totalCollected.toStringAsFixed(3)}',
+                    Icons.monetization_on,
                     Colors.lightBlue[800]!,
                   ),
                   _buildSummaryTile(
-                    'Total Outstanding',
-                    'Ksh ${totalOutstanding.toStringAsFixed(2)}',
-                    Icons.warning,
+                    'Total Outstanding'.toUpperCase(),
+                    'Ksh: ${totalOutstanding.toStringAsFixed(3)}',
+                    Icons.monetization_on,
                     Colors.orange,
                   ),
                   _buildSummaryTile(
-                    'Members Paid',
-                    '$_regFeeMembers Registration • $_monthlyFeeMembers Monthly',
+                    'Members Paid'.toUpperCase(),
+                    '$_regFeeMembers Reg • $_monthlyFeeMembers Monthly',
                     Icons.people,
                     Colors.blue,
                   ),
@@ -253,6 +253,23 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
                 Colors.orange[700]!,
               ),
             ],
+          ),
+
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _fetchSummaryData,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.lightBlue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Refresh'),
+            ),
           ),
         ],
       ),
