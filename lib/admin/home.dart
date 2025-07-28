@@ -79,6 +79,53 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
   }
 
+  Future<void> _clearAllChats() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear All Messages'),
+        content: const Text(
+          'Are you sure you want to delete all chat messages? \nThis action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          TextButton(
+            child: const Text('Clear All', style: TextStyle(color: Colors.red)),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final querySnapshot = await _firestore.collection('chats').get();
+        final batch = _firestore.batch();
+        for (final doc in querySnapshot.docs) {
+          batch.delete(doc.reference);
+        }
+
+        await batch.commit();
+        NotificationBar.show(
+          context: context,
+          message: 'All messages cleared successfully',
+          isError: false,
+        );
+
+        setState(() {});
+      } catch (e) {
+        NotificationBar.show(
+          context: context,
+          message: 'Error clearing messages: $e',
+          isError: true,
+        );
+      }
+    }
+  }
+
   Widget _buildRoleCard(String title, int count, IconData icon, Color color) {
     return Card(
       elevation: 0,
@@ -184,6 +231,22 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         ),
                       ),
                       child: const Text('Refresh'),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _clearAllChats,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Clear Chats'),
                     ),
                   ),
                 ],

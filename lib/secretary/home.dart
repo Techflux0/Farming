@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +8,7 @@ import 'minutes.dart';
 import 'reports.dart';
 import '../farm/profile.dart';
 import '../farm/chat.dart';
+import '../farm/notify.dart';
 
 class SecretaryHomeScreen extends StatefulWidget {
   const SecretaryHomeScreen({super.key});
@@ -47,9 +50,11 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error verifying role: $e')));
+      NotificationBar.show(
+        context: context,
+        message: 'Error verifying secretary role: $e',
+        isError: true,
+      );
     }
   }
 
@@ -63,9 +68,6 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
 
       for (final doc in usersQuery.docs) {
         final roles = (doc['roles'] as List?)?.cast<String>() ?? [];
-
-        print('User: ${doc.id}, Roles: $roles');
-
         if (roles.contains('veterinary')) vets++;
         if (roles.contains('farmer')) farmers++;
         if (roles.contains('member') || roles.isEmpty) members++;
@@ -80,9 +82,11 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading user data: $e')));
+      NotificationBar.show(
+        context: context,
+        message: 'Error loading user data: $e',
+        isError: true,
+      );
     }
   }
 
@@ -137,10 +141,11 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Card(
-              elevation: 2,
-              margin: const EdgeInsets.only(bottom: 16),
+              elevation: 0,
+              margin: const EdgeInsets.only(bottom: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
+                side: BorderSide(color: Colors.lightBlue, width: 1),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -267,9 +272,10 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
 
             // Recent activities
             Card(
-              elevation: 2,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
+                side: BorderSide(color: Colors.lightBlue, width: 1),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -305,10 +311,7 @@ class _SecretaryHomeScreenState extends State<SecretaryHomeScreen> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: BorderSide(
-          color: Colors.lightBlue, 
-          width: 1,     
-        ),
+        side: BorderSide(color: Colors.lightBlue, width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),

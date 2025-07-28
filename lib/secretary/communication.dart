@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../farm/notify.dart';
 
 class CommunicationHomeScreen extends StatefulWidget {
   const CommunicationHomeScreen({super.key});
@@ -11,8 +14,7 @@ class CommunicationHomeScreen extends StatefulWidget {
 
 class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  String? _selectedType; // Make it nullable
+  String? _selectedType;
   final TextEditingController _receiverController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
 
@@ -31,16 +33,69 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
         'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error sending message: $e');
+      NotificationBar.show(
+        context: context,
+        message: 'Failed to send message',
+        isError: true,
+      );
     }
   }
 
-  Stream<QuerySnapshot> getMessages(String userId) {
-    return _firestore
-        .collection('messages')
-        .where('receiverId', isEqualTo: userId)
-        .orderBy('timestamp', descending: true)
-        .snapshots();
+  Future<bool?> _showDeleteConfirmationDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Colors.lightBlue, width: 1),
+        ),
+        title: const Center(
+          child: Text(
+            'Confirm Delete',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1976D2),
+            ),
+          ),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this message?',
+          style: TextStyle(color: Colors.black54, fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.lightBlue[700],
+              backgroundColor: Colors.lightBlue[50],
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.red[700],
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -81,6 +136,7 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
               color: cardColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.lightBlue, width: 1),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -91,7 +147,10 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                       items: const [
                         DropdownMenuItem(
                           value: null,
-                          child: Text('Select Message Type', style: TextStyle(color: Colors.grey)),
+                          child: Text(
+                            'Select Message Type',
+                            style: TextStyle(color: Colors.grey),
+                          ),
                         ),
                         DropdownMenuItem(
                           value: 'Meeting Announcement',
@@ -143,7 +202,8 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                             ),
                             onPressed: () async {
                               final senderId = 'secretary';
-                              final receiverId = _receiverController.text.trim();
+                              final receiverId = _receiverController.text
+                                  .trim();
                               final message = _messageController.text.trim();
                               if (message.isNotEmpty && _selectedType != null) {
                                 await sendMessage(
@@ -157,14 +217,16 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                                 setState(() {
                                   _selectedType = null;
                                 });
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Message sent!')),
+                                NotificationBar.show(
+                                  context: context,
+                                  message: 'Message sent successfully',
+                                  isError: false,
                                 );
                               }
                             },
                           ),
                         ),
-                        const SizedBox(width: 6), 
+                        const SizedBox(width: 6),
                         Expanded(
                           child: ElevatedButton.icon(
                             icon: const Icon(Icons.clear, color: Colors.white),
@@ -213,17 +275,16 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return const Text('No messages found.');
                   }
-                  final docs = snapshot.data!.docs;
                   return ListView.builder(
-                    itemCount: docs.length,
+                    itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) {
-                      final doc = docs[index];
+                      final doc = snapshot.data!.docs[index];
                       final data = doc.data() as Map<String, dynamic>;
                       return Card(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                           side: const BorderSide(
-                            color: Colors.lightBlue, 
+                            color: Colors.lightBlue,
                             width: 1,
                           ),
                         ),
@@ -232,8 +293,8 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                             data['type'] == 'Meeting Announcement'
                                 ? Icons.event
                                 : data['type'] == 'Deadline Notification'
-                                    ? Icons.timer
-                                    : Icons.campaign,
+                                ? Icons.timer
+                                : Icons.campaign,
                             color: Colors.lightBlue,
                           ),
                           title: Text(data['type'] ?? 'Message'),
@@ -243,153 +304,51 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                             children: [
                               TextButton(
                                 style: TextButton.styleFrom(
-                                  backgroundColor: Colors.lightBlue[100],
-                                  foregroundColor: Colors.lightBlue, 
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  backgroundColor: Colors.lightBlue,
+                                  foregroundColor: Colors.lightBlue,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                                child: const Text('Edit', style: TextStyle(color: Colors.orange)),
+                                child: const Text(
+                                  'Edit',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                onPressed: () => _showEditDialog(doc, data),
+                              ),
+                              const SizedBox(width: 8),
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.lightBlue,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                                 onPressed: () async {
-                                  final TextEditingController editController =
-                                      TextEditingController(text: data['message']);
-                                  final result = await showDialog<String>(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Edit Message'),
-                                      content: TextField(
-                                        controller: editController,
-                                        maxLines: 2,
-                                        decoration: const InputDecoration(labelText: 'Message'),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          style: TextButton.styleFrom(
-                                            backgroundColor: Colors.lightBlue[50],
-                                            foregroundColor: Colors.lightBlue, 
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                          ),
-                                          onPressed: () => Navigator.pop(context),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.lightBlue,
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                          ),
-                                          onPressed: () => Navigator.pop(context, editController.text),
-                                          child: const Text('Save'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                  if (result != null && result.trim().isNotEmpty) {
+                                  final confirmed =
+                                      await _showDeleteConfirmationDialog();
+                                  if (confirmed == true) {
                                     await _firestore
                                         .collection('messages')
                                         .doc(doc.id)
-                                        .update({'message': result.trim()});
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Message updated!')),
-                                    );
-                                  }
-                                },
-                              ),
-                              const SizedBox(width: 0),
-                              TextButton(
-                                style: TextButton.styleFrom(
-                                  backgroundColor: Colors.lightBlue[100],
-                                  foregroundColor: Colors.lightBlue, 
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                                onPressed: () async {
-                                  final confirmed = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Confirm Delete'),
-                                      content: const Text('Are you sure you want to delete this message?'),
-                                      actions: [
-                                        TextButton(
-                                          style: TextButton.styleFrom(
-                                            backgroundColor: Colors.lightBlue[50],
-                                            foregroundColor: Colors.orange,
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                          ),
-                                          onPressed: () => Navigator.pop(context, false),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        TextButton(
-                                          style: TextButton.styleFrom(
-                                            backgroundColor: Colors.red[50],
-                                            foregroundColor: Colors.red,
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                          ),
-                                          child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                                          onPressed: () async {
-                                            final confirmed = await showDialog<bool>(
-                                              context: context,
-                                              builder: (context) => AlertDialog(
-                                                title: const Text('Confirm Delete'),
-                                                content: const Text('Are you sure you want to delete this message?'),
-                                                actions: [
-                                                  TextButton(
-                                                    style: TextButton.styleFrom(
-                                                      backgroundColor: Colors.lightBlue[50],
-                                                      foregroundColor: Colors.orange,
-                                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.circular(8),
-                                                      ),
-                                                    ),
-                                                    onPressed: () => Navigator.pop(context, false),
-                                                    child: const Text('Cancel'),
-                                                  ),
-                                                  TextButton(
-                                                    style: TextButton.styleFrom(
-                                                      backgroundColor: Colors.red[100],
-                                                      foregroundColor: Colors.red,
-                                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.circular(8),
-                                                      ),
-                                                    ),
-                                                    onPressed: () => Navigator.pop(context, true),
-                                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                            if (confirmed == true) {
-                                              await _firestore.collection('messages').doc(doc.id).delete();
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('Message deleted!')),
-                                              );
-                                            }
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                  if (confirmed == true) {
-                                    await _firestore.collection('messages').doc(doc.id).delete();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Message deleted!')),
+                                        .delete();
+                                    NotificationBar.show(
+                                      context: context,
+                                      message: 'Message deleted!',
+                                      isError: false,
                                     );
                                   }
                                 },
@@ -407,5 +366,84 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _showEditDialog(
+    DocumentSnapshot doc,
+    Map<String, dynamic> data,
+  ) async {
+    final TextEditingController editController = TextEditingController(
+      text: data['message'],
+    );
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Colors.lightBlue, width: 1),
+        ),
+        title: const Center(
+          child: Text(
+            'Edit Message',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1976D2),
+            ),
+          ),
+        ),
+        content: TextField(
+          controller: editController,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Message',
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.lightBlue[700],
+              backgroundColor: Colors.lightBlue[50],
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.lightBlue[700],
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context, editController.text),
+            child: const Text(
+              'Save',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.trim().isNotEmpty) {
+      await _firestore.collection('messages').doc(doc.id).update({
+        'message': result.trim(),
+      });
+      NotificationBar.show(
+        context: context,
+        message: 'Message updated!',
+        isError: false,
+      );
+    }
   }
 }

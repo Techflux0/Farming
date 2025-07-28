@@ -354,7 +354,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            Image.asset('assets/scafold/sprout.png', height: 60),
+            Image.asset('assets/scafold/goat.png', height: 60),
             const SizedBox(height: 20),
             const Text(
               'Welcome Back',
@@ -391,7 +391,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.lightBlue, width: 2),
+                // side: const BorderSide(color: Colors.lightBlue, width: 2),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),

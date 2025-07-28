@@ -228,7 +228,7 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            Image.asset('assets/scafold/sprout.png', height: 60),
+            Image.asset('assets/scafold/goat.png', height: 60),
             const SizedBox(height: 20),
             const Text(
               'Join Our Farming Community',
@@ -262,7 +262,7 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
                 ),
               ),
             Card(
-              elevation: 2,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -279,7 +279,9 @@ class _SecureSignUpPageState extends State<SecureSignUpPage> {
                           prefixIcon: const Icon(Icons.person),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.grey),
+                            borderSide: const BorderSide(
+                              color: Colors.lightBlue,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,

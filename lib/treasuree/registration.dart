@@ -114,16 +114,81 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
     });
   }
 
-  Future<void> _deleteRecord(String id) async {
-    await FirebaseFirestore.instance
-        .collection('registration_fees')
-        .doc(id)
-        .delete();
-    NotificationBar.show(
+  Future<void> _deleteRecord(String id, String name) async {
+    final confirmed = await showDialog<bool>(
       context: context,
-      message: '🗑️ Record deleted',
-      isError: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Colors.lightBlue, width: 1),
+        ),
+        title: const Center(
+          child: Text(
+            'Confirm Delete',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1976D2),
+            ),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete "$name"?',
+          style: const TextStyle(color: Colors.black54, fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.lightBlue[700],
+              backgroundColor: Colors.lightBlue[50],
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.red[700],
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
     );
+
+    if (confirmed == true) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('registration_fees')
+            .doc(id)
+            .delete();
+        NotificationBar.show(
+          context: context,
+          message: '🗑️ Record deleted',
+          isError: false,
+        );
+      } catch (e) {
+        NotificationBar.show(
+          context: context,
+          message: 'Error deleting record: $e',
+          isError: true,
+        );
+      }
+    }
   }
 
   @override
@@ -251,7 +316,6 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                 fillColor: Colors.grey.shade200,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -265,10 +329,10 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
-                color: Colors.green,
+                color: Colors.lightBlue,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('registration_fees')
@@ -295,10 +359,17 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                     return Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
+                        side: const BorderSide(
+                          color: Colors.lightBlue,
+                          width: 1,
+                        ),
                       ),
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       child: ListTile(
-                        leading: const Icon(Icons.person, color: Colors.green),
+                        leading: const Icon(
+                          Icons.person,
+                          color: Colors.lightBlue,
+                        ),
                         title: Text(data['name']),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -317,21 +388,20 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                             ),
                           ],
                         ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                                color: Colors.orange,
-                              ),
-                              onPressed: () => _startEdit(docs[index]),
+                        trailing: TextButton(
+                          onPressed: () => _deleteRecord(docId, data['name']),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.red[700],
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteRecord(docId),
-                            ),
-                          ],
+                          ),
+                          child: const Text(
+                            'Delete',
+                            style: TextStyle(fontSize: 10),
+                          ),
                         ),
                       ),
                     );
