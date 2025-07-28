@@ -164,23 +164,25 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(width: 50),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.clear, color: Colors.white),
-                          label: const Text(
-                            'Clear',
-                            style: TextStyle(color: Colors.white),
+                        const SizedBox(width: 6), // Reduced gap
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.clear, color: Colors.white),
+                            label: const Text(
+                              'Clear',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.lightBlue,
+                            ),
+                            onPressed: () {
+                              _messageController.clear();
+                              _receiverController.clear();
+                              setState(() {
+                                _selectedType = null;
+                              });
+                            },
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.lightBlue,
-                          ),
-                          onPressed: () {
-                            _messageController.clear();
-                            _receiverController.clear();
-                            setState(() {
-                              _selectedType = null;
-                            });
-                          },
                         ),
                       ],
                     ),
@@ -240,6 +242,14 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               TextButton(
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.lightBlue[100],
+                                  foregroundColor: Colors.lightBlue, 
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
                                 child: const Text('Edit', style: TextStyle(color: Colors.orange)),
                                 onPressed: () async {
                                   final TextEditingController editController =
@@ -255,12 +265,26 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                                       ),
                                       actions: [
                                         TextButton(
+                                          style: TextButton.styleFrom(
+                                            backgroundColor: Colors.lightBlue[50],
+                                            foregroundColor: Colors.lightBlue, 
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                          ),
                                           onPressed: () => Navigator.pop(context),
                                           child: const Text('Cancel'),
                                         ),
                                         ElevatedButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, editController.text),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.lightBlue,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                          onPressed: () => Navigator.pop(context, editController.text),
                                           child: const Text('Save'),
                                         ),
                                       ],
@@ -277,8 +301,16 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                                   }
                                 },
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 0),
                               TextButton(
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.lightBlue[100],
+                                  foregroundColor: Colors.lightBlue, 
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
                                 child: const Text('Delete', style: TextStyle(color: Colors.red)),
                                 onPressed: () async {
                                   final confirmed = await showDialog<bool>(
@@ -288,12 +320,68 @@ class _CommunicationHomeScreenState extends State<CommunicationHomeScreen> {
                                       content: const Text('Are you sure you want to delete this message?'),
                                       actions: [
                                         TextButton(
+                                          style: TextButton.styleFrom(
+                                            backgroundColor: Colors.lightBlue[50],
+                                            foregroundColor: Colors.orange,
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                          ),
                                           onPressed: () => Navigator.pop(context, false),
                                           child: const Text('Cancel'),
                                         ),
                                         TextButton(
-                                          onPressed: () => Navigator.pop(context, true),
+                                          style: TextButton.styleFrom(
+                                            backgroundColor: Colors.red[50],
+                                            foregroundColor: Colors.red,
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                          ),
                                           child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                          onPressed: () async {
+                                            final confirmed = await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) => AlertDialog(
+                                                title: const Text('Confirm Delete'),
+                                                content: const Text('Are you sure you want to delete this message?'),
+                                                actions: [
+                                                  TextButton(
+                                                    style: TextButton.styleFrom(
+                                                      backgroundColor: Colors.lightBlue[50],
+                                                      foregroundColor: Colors.orange,
+                                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                    ),
+                                                    onPressed: () => Navigator.pop(context, false),
+                                                    child: const Text('Cancel'),
+                                                  ),
+                                                  TextButton(
+                                                    style: TextButton.styleFrom(
+                                                      backgroundColor: Colors.red[100],
+                                                      foregroundColor: Colors.red,
+                                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                    ),
+                                                    onPressed: () => Navigator.pop(context, true),
+                                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                            if (confirmed == true) {
+                                              await _firestore.collection('messages').doc(doc.id).delete();
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('Message deleted!')),
+                                              );
+                                            }
+                                          },
                                         ),
                                       ],
                                     ),
