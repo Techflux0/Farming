@@ -59,9 +59,13 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Card(
-              elevation: 2,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
+                side: const BorderSide(
+                            color: Colors.lightBlue, 
+                            width: 1,
+                  ),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
