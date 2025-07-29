@@ -47,7 +47,7 @@ flutter:
 
   assets:
     - assets/launcher/splash.json
-    - assets/scafold/sprout.png
+    - assets/scafold/goat.png
     - assets/scafold/google.png
     - assets/scafold/goat.png
     - assets/sounds/notify.mp3
