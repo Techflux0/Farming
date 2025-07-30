@@ -1,4 +1,4 @@
-# yooh streak
+# Farring App
 
 A new Flutter project.
 
