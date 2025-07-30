@@ -1,4 +1,4 @@
-# farm app
+# yooh streak
 
 A new Flutter project.
 
