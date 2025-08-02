@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -21,28 +20,71 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Form controllers
-  final TextEditingController _typeController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _countController = TextEditingController();
-  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _sireController = TextEditingController();
+  final TextEditingController _damController = TextEditingController();
+  final TextEditingController _weightController = TextEditingController();
+  final TextEditingController _weighingWeeksController =
+      TextEditingController();
+  final TextEditingController _offspringCountController =
+      TextEditingController();
+  final TextEditingController _removalReasonController =
+      TextEditingController();
   final TextEditingController _notesController = TextEditingController();
-  final TextEditingController _illnessController = TextEditingController();
 
-  String _gender = 'male';
-  bool _isPregnant = false;
-  bool _hasIllness = false;
+  // Dropdown values
+  String _gender = 'ram';
+  String _breed = 'Merino';
+  String _birthType = 'single';
+  DateTime? _birthDate;
+  DateTime? _weanDate;
+  DateTime? _removalDate;
   bool _isLoading = false;
   bool _showAddForm = false;
   String? _editingLivestockId;
+  bool _isExpanded = false;
+
+  // Sheep breeds list
+  final List<String> _breeds = [
+    'Merino',
+    'Dorper',
+    'Suffolk',
+    'Dorset',
+    'Hampshire',
+    'Katahdin',
+    'Rambouillet',
+    'Cheviot',
+    'Columbia',
+    'Corriedale',
+    'Finnsheep',
+    'Icelandic',
+    'Jacob',
+    'Karakul',
+    'Lincoln',
+    'Montadale',
+    'Oxford',
+    'Polypay',
+    'Romney',
+    'Southdown',
+    'Targhee',
+    'Texel',
+  ];
+
+  // Birth types
+  final List<String> _birthTypes = ['single', 'twin', 'triplet', 'quad'];
 
   @override
   void dispose() {
-    _typeController.dispose();
-    _ageController.dispose();
+    _nameController.dispose();
     _countController.dispose();
-    _priceController.dispose();
+    _sireController.dispose();
+    _damController.dispose();
+    _weightController.dispose();
+    _weighingWeeksController.dispose();
+    _offspringCountController.dispose();
+    _removalReasonController.dispose();
     _notesController.dispose();
-    _illnessController.dispose();
     super.dispose();
   }
 
@@ -56,14 +98,21 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
 
       final livestockData = {
         'userId': user.uid,
-        'type': _typeController.text.trim(),
-        'age': int.tryParse(_ageController.text) ?? 0,
+        'name': _nameController.text.trim(),
         'count': int.tryParse(_countController.text) ?? 1,
-        'price': double.tryParse(_priceController.text) ?? 0.0,
+        'type': 'sheep',
         'gender': _gender,
-        'isPregnant': _gender == 'female' ? _isPregnant : false,
-        'hasIllness': _hasIllness,
-        if (_hasIllness) 'illnessDescription': _illnessController.text.trim(),
+        'breed': _breed,
+        'sire': _sireController.text.trim(),
+        'dam': _damController.text.trim(),
+        'weight': double.tryParse(_weightController.text),
+        'weighingWeeks': int.tryParse(_weighingWeeksController.text),
+        'birthType': _birthType,
+        'birthDate': _birthDate,
+        'weanDate': _weanDate,
+        'removalDate': _removalDate,
+        'removalReason': _removalReasonController.text.trim(),
+        'offspringCount': int.tryParse(_offspringCountController.text) ?? 0,
         'notes': _notesController.text.trim(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
@@ -76,7 +125,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
             .update(livestockData);
         NotificationBar.show(
           context: context,
-          message: 'Livestock updated successfully!',
+          message: 'Sheep record updated successfully!',
           isError: false,
         );
       } else {
@@ -85,7 +134,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
         await _firestore.collection('livestocks').add(livestockData);
         NotificationBar.show(
           context: context,
-          message: 'Livestock added successfully!',
+          message: 'Sheep record added successfully!',
           isError: false,
         );
       }
@@ -107,14 +156,21 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
     final data = doc.data() as Map<String, dynamic>;
     setState(() {
       _editingLivestockId = doc.id;
-      _typeController.text = data['type'] ?? '';
-      _ageController.text = data['age']?.toString() ?? '';
-      _countController.text = data['count']?.toString() ?? '';
-      _priceController.text = data['price']?.toString() ?? '';
-      _gender = data['gender'] ?? 'male';
-      _isPregnant = data['isPregnant'] ?? false;
-      _hasIllness = data['hasIllness'] ?? false;
-      _illnessController.text = data['illnessDescription'] ?? '';
+      _nameController.text = data['name'] ?? '';
+      _countController.text = data['count']?.toString() ?? '1';
+      _gender = data['gender'] ?? 'ram';
+      _breed = data['breed'] ?? 'Merino';
+      _sireController.text = data['sire'] ?? '';
+      _damController.text = data['dam'] ?? '';
+      _weightController.text = data['weight']?.toString() ?? '';
+      _weighingWeeksController.text = data['weighingWeeks']?.toString() ?? '';
+      _birthType = data['birthType'] ?? 'single';
+      _birthDate = data['birthDate']?.toDate();
+      _weanDate = data['weanDate']?.toDate();
+      _removalDate = data['removalDate']?.toDate();
+      _removalReasonController.text = data['removalReason'] ?? '';
+      _offspringCountController.text =
+          data['offspringCount']?.toString() ?? '0';
       _notesController.text = data['notes'] ?? '';
       _showAddForm = true;
     });
@@ -138,7 +194,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
           ),
         ),
         content: const Text(
-          'Are you sure you want to delete this goat record?',
+          'Are you sure you want to delete this sheep record?',
           style: TextStyle(color: Colors.black54, fontSize: 15),
         ),
         actions: [
@@ -181,7 +237,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
         await _firestore.collection('livestocks').doc(docId).delete();
         NotificationBar.show(
           context: context,
-          message: 'Livestock deleted successfully!',
+          message: 'Sheep record deleted successfully!',
           isError: false,
         );
       } catch (e) {
@@ -196,12 +252,51 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
 
   void _resetForm() {
     _formKey.currentState?.reset();
-    _gender = 'male';
-    _isPregnant = false;
-    _hasIllness = false;
-    _illnessController.clear();
+    _gender = 'ram';
+    _breed = 'Merino';
+    _birthType = 'single';
+    _birthDate = null;
+    _weanDate = null;
+    _removalDate = null;
     _editingLivestockId = null;
+    _isExpanded = false;
     setState(() => _showAddForm = false);
+  }
+
+  Future<void> _selectDate(BuildContext context, bool isBirthDate) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        if (isBirthDate) {
+          _birthDate = picked;
+        } else if (isBirthDate == false &&
+            _birthDate != null &&
+            picked.isAfter(_birthDate!)) {
+          _weanDate = picked;
+        } else if (isBirthDate == false && _birthDate == null) {
+          _birthDate = picked;
+        }
+      });
+    }
+  }
+
+  Future<void> _selectRemovalDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        _removalDate = picked;
+      });
+    }
   }
 
   @override
@@ -239,7 +334,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                 child: Row(
                   children: [
                     Text(
-                      'Livestock',
+                      'Sheep Management',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w600,
@@ -273,6 +368,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                   stream: _firestore
                       .collection('livestocks')
                       .where('userId', isEqualTo: user.uid)
+                      .where('type', isEqualTo: 'sheep')
                       .orderBy('createdAt', descending: true)
                       .snapshots(),
                   builder: (context, snapshot) {
@@ -288,7 +384,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                             Icon(Icons.pets, size: 60, color: Colors.grey[400]),
                             const SizedBox(height: 16),
                             Text(
-                              'No livestock recorded yet',
+                              'No sheep recorded yet',
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.grey[600],
@@ -299,7 +395,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                               onPressed: () =>
                                   setState(() => _showAddForm = true),
                               child: Text(
-                                'Add Livestock',
+                                'Add Sheep',
                                 style: TextStyle(
                                   color: Colors.lightBlue[700],
                                   fontSize: 16,
@@ -321,7 +417,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Text(
-                              'You have ${livestock.length} goats',
+                              'You have ${livestock.length} sheep',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -333,224 +429,290 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
 
                         final doc = livestock[index - 1];
                         final data = doc.data() as Map<String, dynamic>;
-                        final isFemale = data['gender'] == 'female';
+                        final isEwe = data['gender'] == 'ewe';
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.lightBlue,
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
+                        return GestureDetector(
+                          onTap: () => setState(() {
+                            _isExpanded = !_isExpanded;
+                          }),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.lightBlue,
+                                width: 1,
                               ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: Colors.lightBlue[100],
-                                        shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.lightBlue[100],
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.pets,
+                                          color: Colors.lightBlue[700],
+                                        ),
                                       ),
-                                      child: Icon(
-                                        Icons.pets,
-                                        color: Colors.lightBlue[700],
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '${data['name'] ?? 'Unnamed'} (ID: ${data['count']})',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.grey[800],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '${data['breed'] ?? 'Unknown'} • ${data['gender'] == 'ewe' ? 'Ewe' : 'Ram'}',
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                      Column(
                                         children: [
-                                          Text(
-                                            data['type'] ?? 'Unknown Type',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey[800],
+                                          SizedBox(
+                                            width: 60,
+                                            child: TextButton(
+                                              onPressed: () =>
+                                                  _editLivestock(doc),
+                                              style: TextButton.styleFrom(
+                                                foregroundColor: Colors.white,
+                                                backgroundColor:
+                                                    Colors.lightBlue[700],
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 2,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                'Edit',
+                                                style: TextStyle(fontSize: 10),
+                                              ),
                                             ),
                                           ),
                                           const SizedBox(height: 2),
-                                          Text(
-                                            '${data['age']} months • ${data['gender']}',
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
+                                          SizedBox(
+                                            width: 60,
+                                            child: TextButton(
+                                              onPressed: () =>
+                                                  _deleteLivestock(doc.id),
+                                              style: TextButton.styleFrom(
+                                                foregroundColor: Colors.white,
+                                                backgroundColor:
+                                                    Colors.red[700],
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 2,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                'Delete',
+                                                style: TextStyle(fontSize: 10),
+                                              ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    Column(
+                                    ],
+                                  ),
+                                  if (_isExpanded) ...[
+                                    const SizedBox(height: 12),
+                                    Divider(height: 1, color: Colors.grey[200]),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        SizedBox(
-                                          width: 60,
-                                          child: TextButton(
-                                            onPressed: () =>
-                                                _editLivestock(doc),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: Colors.white,
-                                              backgroundColor:
-                                                  Colors.lightBlue[700],
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 2,
-                                                  ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                            ),
-                                            child: const Text(
-                                              'Edit',
-                                              style: TextStyle(fontSize: 10),
-                                            ),
-                                          ),
+                                        _buildDetailItem(
+                                          Icons.scale,
+                                          '${data['weight'] ?? 'N/A'} kg',
+                                          Colors.blue[600]!,
                                         ),
-                                        const SizedBox(height: 2),
-                                        SizedBox(
-                                          width: 60,
-                                          child: TextButton(
-                                            onPressed: () =>
-                                                _deleteLivestock(doc.id),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: Colors.white,
-                                              backgroundColor: Colors.red[700],
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 2,
-                                                  ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                            ),
-                                            child: const Text(
-                                              'Delete',
-                                              style: TextStyle(fontSize: 10),
-                                            ),
-                                          ),
+                                        _buildDetailItem(
+                                          Icons.calendar_today,
+                                          data['birthDate'] != null
+                                              ? DateFormat('MMM d, y').format(
+                                                  (data['birthDate']
+                                                          as Timestamp)
+                                                      .toDate(),
+                                                )
+                                              : 'No birth date',
+                                          Colors.orange[600]!,
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Divider(height: 1, color: Colors.grey[200]),
-                                const SizedBox(height: 12),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    _buildDetailItem(
-                                      Icons.numbers,
-                                      'ID ${data['count']}',
-                                      Colors.blue[600]!,
-                                    ),
-                                    _buildDetailItem(
-                                      Icons.attach_money,
-                                      '${data['price']}',
-                                      Colors.lightBlue[600]!,
-                                    ),
-                                    _buildDetailItem(
-                                      Icons.calendar_today,
-                                      'Added ${DateFormat('MMM d').format((data['createdAt'] as Timestamp).toDate())}',
-                                      Colors.orange[600]!,
-                                    ),
-                                  ],
-                                ),
-                                if (isFemale) ...[
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.pink[50],
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
+                                    const SizedBox(height: 8),
+                                    Row(
                                       children: [
                                         Icon(
-                                          Icons.child_friendly,
+                                          Icons.family_restroom,
                                           size: 16,
-                                          color: Colors.pink[700],
+                                          color: Colors.purple[600],
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
-                                          data['isPregnant'] == true
-                                              ? 'Pregnant'
-                                              : 'Not Pregnant',
+                                          'Sire: ${data['sire'] ?? 'Unknown'}',
                                           style: TextStyle(
-                                            color: Colors.pink[700],
+                                            color: Colors.purple[600],
                                             fontSize: 12,
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ],
-                                if (data['hasIllness'] == true) ...[
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red[50],
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
+                                    const SizedBox(height: 4),
+                                    Row(
                                       children: [
                                         Icon(
-                                          Icons.medical_services,
+                                          Icons.family_restroom,
                                           size: 16,
-                                          color: Colors.red[700],
+                                          color: Colors.purple[600],
                                         ),
                                         const SizedBox(width: 4),
-                                        Expanded(
-                                          child: Text(
-                                            'Illness: ${data['illnessDescription'] ?? 'Not specified'}',
-                                            style: TextStyle(
-                                              color: Colors.red[700],
-                                              fontSize: 12,
-                                            ),
+                                        Text(
+                                          'Dam: ${data['dam'] ?? 'Unknown'}',
+                                          style: TextStyle(
+                                            color: Colors.purple[600],
+                                            fontSize: 12,
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ],
-                                if (data['notes'] != null &&
-                                    data['notes'].isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Notes: ${data['notes']}',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontStyle: FontStyle.italic,
-                                      fontSize: 12,
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.child_care,
+                                          size: 16,
+                                          color: Colors.pink[600],
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Birth type: ${data['birthType'] ?? 'Unknown'}',
+                                          style: TextStyle(
+                                            color: Colors.pink[600],
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
+                                    if (data['weanDate'] != null) ...[
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.event,
+                                            size: 16,
+                                            color: Colors.green[600],
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Weaned: ${DateFormat('MMM d, y').format((data['weanDate'] as Timestamp).toDate())}',
+                                            style: TextStyle(
+                                              color: Colors.green[600],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                    if (data['removalDate'] != null) ...[
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.event_busy,
+                                            size: 16,
+                                            color: Colors.red[600],
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Removed: ${DateFormat('MMM d, y').format((data['removalDate'] as Timestamp).toDate())}',
+                                            style: TextStyle(
+                                              color: Colors.red[600],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Reason: ${data['removalReason'] ?? 'Not specified'}',
+                                        style: TextStyle(
+                                          color: Colors.red[600],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                    if (isEwe) ...[
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.child_friendly,
+                                            size: 16,
+                                            color: Colors.pink[600],
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Offspring: ${data['offspringCount'] ?? 0}',
+                                            style: TextStyle(
+                                              color: Colors.pink[600],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                    if (data['notes'] != null &&
+                                        data['notes'].isNotEmpty) ...[
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Notes: ${data['notes']}',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontStyle: FontStyle.italic,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ),
                         );
@@ -592,8 +754,8 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                             children: [
                               Text(
                                 _editingLivestockId != null
-                                    ? 'Edit Livestock'
-                                    : 'Add Livestock',
+                                    ? 'Edit Sheep Record'
+                                    : 'Add Sheep Record',
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w600,
@@ -610,9 +772,9 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                           const Divider(),
                           const SizedBox(height: 16),
                           TextFormField(
-                            controller: _typeController,
+                            controller: _nameController,
                             decoration: InputDecoration(
-                              labelText: 'Livestock Type',
+                              labelText: 'Sheep Name',
                               labelStyle: TextStyle(color: Colors.grey[600]),
                               prefixIcon: Icon(
                                 Icons.pets,
@@ -635,7 +797,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter livestock type';
+                                return 'Please enter sheep name';
                               }
                               return null;
                             },
@@ -645,49 +807,9 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                             children: [
                               Expanded(
                                 child: TextFormField(
-                                  controller: _ageController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Age (months)',
-                                    labelStyle: TextStyle(
-                                      color: Colors.grey[600],
-                                    ),
-                                    prefixIcon: Icon(
-                                      Icons.cake,
-                                      color: Colors.grey[600],
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(
-                                        color: Colors.grey[300]!,
-                                      ),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(
-                                        color: Colors.grey[300]!,
-                                      ),
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey[50],
-                                  ),
-                                  keyboardType: TextInputType.number,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter age';
-                                    }
-                                    if (int.tryParse(value) == null) {
-                                      return 'Please enter a valid number';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: TextFormField(
                                   controller: _countController,
                                   decoration: InputDecoration(
-                                    labelText: 'ID',
+                                    labelText: 'Sheep ID',
                                     labelStyle: TextStyle(
                                       color: Colors.grey[600],
                                     ),
@@ -713,7 +835,7 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                   keyboardType: TextInputType.number,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Please enter count';
+                                      return 'Please enter sheep ID';
                                     }
                                     if (int.tryParse(value) == null) {
                                       return 'Please enter a valid number';
@@ -722,16 +844,67 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                   },
                                 ),
                               ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  value: _gender,
+                                  decoration: InputDecoration(
+                                    labelText: 'Gender',
+                                    labelStyle: TextStyle(
+                                      color: Colors.grey[600],
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.male,
+                                      color: Colors.grey[600],
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey[300]!,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey[300]!,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.grey[50],
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 'ram',
+                                      child: Text('Ram'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'ewe',
+                                      child: Text('Ewe'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _gender = value!;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null) {
+                                      return 'Please select gender';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _priceController,
+                          DropdownButtonFormField<String>(
+                            value: _breed,
                             decoration: InputDecoration(
-                              labelText: 'Price per unit',
+                              labelText: 'Breed',
                               labelStyle: TextStyle(color: Colors.grey[600]),
                               prefixIcon: Icon(
-                                Icons.attach_money,
+                                Icons.category,
                                 color: Colors.grey[600],
                               ),
                               border: OutlineInputBorder(
@@ -749,185 +922,355 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                               filled: true,
                               fillColor: Colors.grey[50],
                             ),
-                            keyboardType: TextInputType.number,
+                            items: _breeds.map((breed) {
+                              return DropdownMenuItem(
+                                value: breed,
+                                child: Text(breed),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _breed = value!;
+                              });
+                            },
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter price';
-                              }
-                              if (double.tryParse(value) == null) {
-                                return 'Please enter a valid number';
+                              if (value == null) {
+                                return 'Please select breed';
                               }
                               return null;
                             },
                           ),
                           const SizedBox(height: 16),
-                          Text(
-                            'Gender',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
+                          ExpansionTile(
+                            title: Text(
+                              'Parent Information',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
                             children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _gender = 'male';
-                                      _isPregnant = false;
-                                    });
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: _gender == 'male'
-                                        ? Colors.lightBlue[700]
-                                        : Colors.grey[600],
-                                    side: BorderSide(
-                                      color: _gender == 'male'
-                                          ? Colors.lightBlue[700]!
-                                          : Colors.grey[300]!,
-                                    ),
-                                    backgroundColor: _gender == 'male'
-                                        ? Colors.lightBlue[50]
-                                        : Colors.transparent,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _sireController,
+                                decoration: InputDecoration(
+                                  labelText: 'Sire (Father) ID',
+                                  labelStyle: TextStyle(
+                                    color: Colors.grey[600],
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.male,
+                                    color: Colors.grey[600],
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
                                     ),
                                   ),
-                                  child: const Text('Male'),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    setState(() => _gender = 'female');
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: _gender == 'female'
-                                        ? Colors.pink[700]
-                                        : Colors.grey[600],
-                                    side: BorderSide(
-                                      color: _gender == 'female'
-                                          ? Colors.pink[700]!
-                                          : Colors.grey[300]!,
-                                    ),
-                                    backgroundColor: _gender == 'female'
-                                        ? Colors.pink[50]
-                                        : Colors.transparent,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _damController,
+                                decoration: InputDecoration(
+                                  labelText: 'Dam (Mother) ID',
+                                  labelStyle: TextStyle(
+                                    color: Colors.grey[600],
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.female,
+                                    color: Colors.grey[600],
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
                                     ),
                                   ),
-                                  child: const Text('Female'),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
                                 ),
                               ),
                             ],
                           ),
-                          if (_gender == 'female') ...[
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                          const SizedBox(height: 16),
+                          ExpansionTile(
+                            title: Text(
+                              'Weight Information',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.pink[50],
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.pink[100]!),
-                              ),
-                              child: SwitchListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(
-                                  'Pregnant',
-                                  style: TextStyle(
-                                    color: Colors.pink[700],
-                                    fontWeight: FontWeight.w500,
+                            ),
+                            children: [
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _weightController,
+                                decoration: InputDecoration(
+                                  labelText: 'Weight (kg)',
+                                  labelStyle: TextStyle(
+                                    color: Colors.grey[600],
                                   ),
+                                  prefixIcon: Icon(
+                                    Icons.scale,
+                                    color: Colors.grey[600],
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
                                 ),
-                                value: _isPregnant,
-                                onChanged: (value) {
-                                  setState(() => _isPregnant = value);
-                                },
-                                activeColor: Colors.pink[700],
+                                keyboardType: TextInputType.number,
+                              ),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _weighingWeeksController,
+                                decoration: InputDecoration(
+                                  labelText: 'Age at Weighing (weeks)',
+                                  labelStyle: TextStyle(
+                                    color: Colors.grey[600],
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.timelapse,
+                                    color: Colors.grey[600],
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
+                                ),
+                                keyboardType: TextInputType.number,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          ExpansionTile(
+                            title: Text(
+                              'Birth Information',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                          ],
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.red[50],
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.red[100]!),
-                            ),
-                            child: SwitchListTile(
-                              contentPadding: EdgeInsets.zero,
+                            children: [
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<String>(
+                                value: _birthType,
+                                decoration: InputDecoration(
+                                  labelText: 'Birth Type',
+                                  labelStyle: TextStyle(
+                                    color: Colors.grey[600],
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.child_care,
+                                    color: Colors.grey[600],
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
+                                ),
+                                items: _birthTypes.map((type) {
+                                  return DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type.capitalize()),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _birthType = value!;
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              ListTile(
+                                leading: Icon(
+                                  Icons.calendar_today,
+                                  color: Colors.grey[600],
+                                ),
+                                title: Text(
+                                  _birthDate == null
+                                      ? 'Select Birth Date'
+                                      : 'Birth Date: ${DateFormat('MMM d, y').format(_birthDate!)}',
+                                ),
+                                trailing: IconButton(
+                                  icon: Icon(Icons.edit),
+                                  onPressed: () => _selectDate(context, true),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ListTile(
+                                leading: Icon(
+                                  Icons.event,
+                                  color: Colors.grey[600],
+                                ),
+                                title: Text(
+                                  _weanDate == null
+                                      ? 'Select Wean Date'
+                                      : 'Wean Date: ${DateFormat('MMM d, y').format(_weanDate!)}',
+                                ),
+                                trailing: IconButton(
+                                  icon: Icon(Icons.edit),
+                                  onPressed: () => _selectDate(context, false),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_gender == 'ewe') ...[
+                            const SizedBox(height: 16),
+                            ExpansionTile(
                               title: Text(
-                                'Has Illness',
+                                'Ewe Information',
                                 style: TextStyle(
-                                  color: Colors.red[700],
+                                  fontSize: 16,
+                                  color: Colors.grey[800],
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              value: _hasIllness,
-                              onChanged: (value) {
-                                setState(() => _hasIllness = value);
-                              },
-                              activeColor: Colors.red[700],
-                            ),
-                          ),
-                          if (_hasIllness) ...[
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _illnessController,
-                              decoration: InputDecoration(
-                                labelText: 'Illness Description',
-                                labelStyle: TextStyle(color: Colors.grey[600]),
-                                prefixIcon: Icon(
-                                  Icons.medical_services,
-                                  color: Colors.grey[600],
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey[300]!,
+                              children: [
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _offspringCountController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Number of Offspring',
+                                    labelStyle: TextStyle(
+                                      color: Colors.grey[600],
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.child_friendly,
+                                      color: Colors.grey[600],
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey[300]!,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey[300]!,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.grey[50],
                                   ),
+                                  keyboardType: TextInputType.number,
                                 ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey[300]!,
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey[50],
-                              ),
-                              validator: (value) {
-                                if (_hasIllness &&
-                                    (value == null || value.isEmpty)) {
-                                  return 'Please describe the illness';
-                                }
-                                return null;
-                              },
+                              ],
                             ),
                           ],
+                          const SizedBox(height: 16),
+                          ExpansionTile(
+                            title: Text(
+                              'Removal Information',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            children: [
+                              const SizedBox(height: 8),
+                              ListTile(
+                                leading: Icon(
+                                  Icons.event_busy,
+                                  color: Colors.grey[600],
+                                ),
+                                title: Text(
+                                  _removalDate == null
+                                      ? 'Select Removal Date'
+                                      : 'Removal Date: ${DateFormat('MMM d, y').format(_removalDate!)}',
+                                ),
+                                trailing: IconButton(
+                                  icon: Icon(Icons.edit),
+                                  onPressed: () => _selectRemovalDate(context),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _removalReasonController,
+                                decoration: InputDecoration(
+                                  labelText: 'Removal Reason',
+                                  labelStyle: TextStyle(
+                                    color: Colors.grey[600],
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.info,
+                                    color: Colors.grey[600],
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
+                                ),
+                                maxLines: 2,
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _notesController,
                             decoration: InputDecoration(
-                              labelText: 'Additional Notes (optional)',
+                              labelText: 'Additional Notes',
                               labelStyle: TextStyle(color: Colors.grey[600]),
                               prefixIcon: Icon(
                                 Icons.note,
@@ -974,8 +1317,8 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
                                   )
                                 : Text(
                                     _editingLivestockId != null
-                                        ? 'Update Livestock'
-                                        : 'Add Livestock',
+                                        ? 'Update Sheep Record'
+                                        : 'Add Sheep Record',
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -1003,5 +1346,11 @@ class _LivestockManagementScreenState extends State<LivestockManagementScreen> {
         Text(text, style: TextStyle(color: color, fontSize: 12)),
       ],
     );
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
   }
 }
