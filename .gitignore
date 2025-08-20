@@ -20,8 +20,8 @@ migrate_working_dir/
 /*.vscode/
 .vscode/
 *.iml
-
-/
+*.jvm
+/all
 *.iml
 *.ipr
 *.iws
