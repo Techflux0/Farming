@@ -29,6 +29,7 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.2
   audioplayers: ^6.5.0
+  url_launcher: ^6.3.2
 
 
 dev_dependencies:

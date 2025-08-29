@@ -1,3 +1,5 @@
+// ignore_for_file: unused_field
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -62,10 +64,7 @@ class _FarmerDrugsPageState extends State<FarmerDrugsPage> {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(
-                            color: Colors.lightBlue, 
-                            width: 1,
-                  ),
+                side: const BorderSide(color: Colors.lightBlue, width: 1),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),

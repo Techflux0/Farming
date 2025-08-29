@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'farm/home.dart';
 import 'farm/login.dart';
 import 'farm/signup.dart';
+import 'farm/updater.dart'; // 👈 your update checker file
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,8 +74,16 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 8, 18, 9),
-      body: Center(
-        child: Lottie.asset('assets/launcher/splash.json', fit: BoxFit.contain),
+      body: Stack(
+        children: [
+          Center(
+            child: Lottie.asset(
+              'assets/launcher/splash.json',
+              fit: BoxFit.contain,
+            ),
+          ),
+          const UpdateChecker(),
+        ],
       ),
     );
   }

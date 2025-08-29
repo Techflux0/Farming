@@ -23,7 +23,8 @@ android {
 
     defaultConfig {
         applicationId = "com.farm.app"
-        minSdk = 23
+        // ✅ Kotlin DSL requires = instead of Groovy-style
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -37,8 +38,8 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-auth:20.7.0")  
-    implementation("com.google.firebase:firebase-auth-ktx:22.3.0")     
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.firebase:firebase-auth-ktx:22.3.0")
 }
 
 flutter {
