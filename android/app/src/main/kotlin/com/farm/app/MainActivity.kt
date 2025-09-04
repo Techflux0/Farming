@@ -1,44 +1,78 @@
 package com.farm.app
 
 import io.flutter.embedding.android.FlutterActivity
-import android.os.Bundle
 import java.io.File
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import android.os.Build
+import android.os.Bundle
+import android.os.Environment
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import android.widget.Toast
 
 class MainActivity : FlutterActivity() {
     companion object {
         private const val STORAGE_PERMISSION_REQUEST_CODE = 1001
+        private const val MANAGE_STORAGE_REQUEST_CODE = 1002
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestStoragePermissions()
+        checkAndRequestPermissions()
     }
 
-    private fun requestStoragePermissions() {
-        val permissions = arrayOf(
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
-
-        // Check if permissions are already granted
-        val permissionsNeeded = permissions.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+    private fun checkAndRequestPermissions() {
+        if (!hasRequiredPermissions()) {
+            requestPermissions()
+        } else {
+            createFarmingDirectory()
         }
+    }
 
-        if (permissionsNeeded.isNotEmpty()) {
-            // Request permissions
+    private fun hasRequiredPermissions(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun requestPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                intent.data = Uri.parse("package:$packageName")
+                startActivityForResult(intent, MANAGE_STORAGE_REQUEST_CODE)
+            } catch (e: Exception) {
+                val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                startActivityForResult(intent, MANAGE_STORAGE_REQUEST_CODE)
+            }
+        } else {
             ActivityCompat.requestPermissions(
                 this,
-                permissionsNeeded.toTypedArray(),
+                arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ),
                 STORAGE_PERMISSION_REQUEST_CODE
             )
-        } else {
-            // Permissions already granted, create directory
-            createFarmingDirectory()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == MANAGE_STORAGE_REQUEST_CODE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) {
+                createFarmingDirectory()
+            } else {
+                Toast.makeText(this, "Full storage access is required", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -50,24 +84,21 @@ class MainActivity : FlutterActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         
         if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
-            // Check if all permissions were granted
             val allGranted = grantResults.all { it == PackageManager.PERMISSION_GRANTED }
             
             if (allGranted) {
                 createFarmingDirectory()
             } else {
-                println("Storage permissions denied")
+                Toast.makeText(this, "Storage permissions denied", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun createFarmingDirectory() {
         try {
-            // Get the external files directory (or internal if external isn't available)
             val baseDir = getExternalFilesDir(null) ?: filesDir
-            
-            // Create the Farming directory
             val farmingDir = File(baseDir, "Farming")
+            
             if (!farmingDir.exists()) {
                 if (farmingDir.mkdirs()) {
                     println("Farming directory created successfully")

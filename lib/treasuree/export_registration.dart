@@ -6,7 +6,7 @@ import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
-class PaymentExporter {
+class RegistrationExporter {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
@@ -25,7 +25,7 @@ class PaymentExporter {
     return 0.0;
   }
 
-  Future<String> exportPaymentsToExcel(
+  Future<String> exportRegistrationToExcel(
     BuildContext context, {
     DateTime? startDate,
     DateTime? endDate,
@@ -40,13 +40,13 @@ class PaymentExporter {
             children: [
               CircularProgressIndicator(),
               SizedBox(width: 16),
-              Text('Exporting payments...'),
+              Text('Exporting registration fees...'),
             ],
           ),
         ),
       );
 
-      QuerySnapshot paymentSnapshot;
+      QuerySnapshot registrationSnapshot;
       String fileNamePrefix = 'all_members';
 
       if (specificMemberId != null) {
@@ -58,44 +58,46 @@ class PaymentExporter {
         fileNamePrefix = _sanitizeFileName(memberName);
 
         if (startDate != null && endDate != null) {
-          paymentSnapshot = await _firestore
-              .collection('monthly_payment')
-              .where('member_id', isEqualTo: specificMemberId)
+          registrationSnapshot = await _firestore
+              .collection('registration_fees')
+              .where('user_id', isEqualTo: specificMemberId)
               .where('payment_date', isGreaterThanOrEqualTo: startDate)
               .where('payment_date', isLessThanOrEqualTo: endDate)
               .orderBy('payment_date', descending: true)
               .get();
         } else {
-          paymentSnapshot = await _firestore
-              .collection('monthly_payment')
-              .where('member_id', isEqualTo: specificMemberId)
+          registrationSnapshot = await _firestore
+              .collection('registration_fees')
+              .where('user_id', isEqualTo: specificMemberId)
               .orderBy('payment_date', descending: true)
               .get();
         }
       } else if (startDate != null && endDate != null) {
-        paymentSnapshot = await _firestore
-            .collection('monthly_payment')
+        registrationSnapshot = await _firestore
+            .collection('registration_fees')
             .where('payment_date', isGreaterThanOrEqualTo: startDate)
             .where('payment_date', isLessThanOrEqualTo: endDate)
             .orderBy('payment_date', descending: true)
             .get();
       } else {
-        paymentSnapshot = await _firestore
-            .collection('monthly_payment')
+        registrationSnapshot = await _firestore
+            .collection('registration_fees')
             .orderBy('payment_date', descending: true)
             .get();
       }
 
-      if (paymentSnapshot.docs.isEmpty) {
+      if (registrationSnapshot.docs.isEmpty) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No payment records found for export')),
+          const SnackBar(
+            content: Text('No registration fee records found for export'),
+          ),
         );
-        throw Exception('No payment records found');
+        throw Exception('No registration fee records found');
       }
 
       final excel = Excel.createExcel();
-      final sheet = excel['Payments'];
+      final sheet = excel['Registration Fees'];
 
       sheet.appendRow([
         TextCellValue('Member Name'),
@@ -103,12 +105,10 @@ class PaymentExporter {
         TextCellValue('Amount Paid (KES)'),
         TextCellValue('Balance (KES)'),
         TextCellValue('Payment Date'),
-        TextCellValue('Has Penalty'),
-        TextCellValue('Previous Balance (KES)'),
         TextCellValue('Timestamp'),
       ]);
 
-      for (var i = 0; i < 8; i++) {
+      for (var i = 0; i < 6; i++) {
         sheet
             .cell(CellIndex.indexByString('${String.fromCharCode(65 + i)}1'))
             .cellStyle = CellStyle(
@@ -125,7 +125,7 @@ class PaymentExporter {
 
       final memberTotals = <String, Map<String, dynamic>>{};
 
-      for (var doc in paymentSnapshot.docs) {
+      for (var doc in registrationSnapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
 
         final paymentDate = (data['payment_date'] as Timestamp).toDate();
@@ -135,10 +135,9 @@ class PaymentExporter {
         final amountPayable = _parseDouble(data['amount_payable']);
         final amountPaid = _parseDouble(data['amount_paid']);
         final balance = _parseDouble(data['balance']);
-        final previousBalance = _parseDouble(data['previous_balance']);
 
-        final memberName = data['name']?.toString() ?? 'Unknown';
-        final memberId = data['member_id']?.toString() ?? '';
+        final memberName = data['fullname'] ?? data['name'] ?? 'Unknown';
+        final memberId = data['user_id']?.toString() ?? '';
 
         totalPayable += amountPayable;
         totalPaid += amountPaid;
@@ -165,8 +164,6 @@ class PaymentExporter {
           TextCellValue(amountPaid.toStringAsFixed(2)),
           TextCellValue(balance.toStringAsFixed(2)),
           TextCellValue(DateFormat('yyyy-MM-dd').format(paymentDate)),
-          TextCellValue(data['has_penalty'] == true ? 'Yes' : 'No'),
-          TextCellValue(previousBalance.toStringAsFixed(2)),
           TextCellValue(DateFormat('yyyy-MM-dd HH:mm').format(timestamp)),
         ]);
 
@@ -187,8 +184,6 @@ class PaymentExporter {
           TextCellValue(''),
           TextCellValue(''),
           TextCellValue(''),
-          TextCellValue(''),
-          TextCellValue(''),
         ]);
 
         for (var memberId in memberTotals.keys) {
@@ -198,8 +193,6 @@ class PaymentExporter {
             TextCellValue(totals['payable']!.toStringAsFixed(2)),
             TextCellValue(totals['paid']!.toStringAsFixed(2)),
             TextCellValue(totals['balance']!.toStringAsFixed(2)),
-            TextCellValue(''),
-            TextCellValue(''),
             TextCellValue(''),
             TextCellValue(''),
           ]);
@@ -214,11 +207,9 @@ class PaymentExporter {
         TextCellValue(totalBalance.toStringAsFixed(2)),
         TextCellValue(''),
         TextCellValue(''),
-        TextCellValue(''),
-        TextCellValue(''),
       ]);
 
-      for (var i = 0; i < 8; i++) {
+      for (var i = 0; i < 6; i++) {
         sheet
             .cell(
               CellIndex.indexByString(
@@ -232,7 +223,7 @@ class PaymentExporter {
       }
 
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final fileName = '${fileNamePrefix}_payments_$timestamp.xlsx';
+      final fileName = '${fileNamePrefix}_registration_fees_$timestamp.xlsx';
 
       final directory = await getApplicationDocumentsDirectory();
       final filePath = '${directory.path}/$fileName';
@@ -246,18 +237,20 @@ class PaymentExporter {
       }
 
       try {
-        final storageRef = _storage.ref().child('payment_exports/$fileName');
+        final storageRef = _storage.ref().child(
+          'registration_exports/$fileName',
+        );
         final uploadTask = storageRef.putFile(file);
         final snapshot = await uploadTask;
 
         if (snapshot.state == TaskState.success) {
           final downloadUrl = await storageRef.getDownloadURL();
 
-          await _firestore.collection('payment_exports').add({
+          await _firestore.collection('registration_exports').add({
             'file_name': fileName,
             'download_url': downloadUrl,
             'created_at': FieldValue.serverTimestamp(),
-            'record_count': paymentSnapshot.docs.length,
+            'record_count': registrationSnapshot.docs.length,
             'total_payable': totalPayable,
             'total_paid': totalPaid,
             'total_balance': totalBalance,
@@ -290,7 +283,7 @@ class PaymentExporter {
   Future<List<Map<String, dynamic>>> getExportHistory() async {
     try {
       final snapshot = await _firestore
-          .collection('payment_exports')
+          .collection('registration_exports')
           .orderBy('created_at', descending: true)
           .get();
 
@@ -316,8 +309,11 @@ class PaymentExporter {
 
   Future<void> deleteExport(String exportId, String fileName) async {
     try {
-      await _firestore.collection('payment_exports').doc(exportId).delete();
-      await _storage.ref().child('payment_exports/$fileName').delete();
+      await _firestore
+          .collection('registration_exports')
+          .doc(exportId)
+          .delete();
+      await _storage.ref().child('registration_exports/$fileName').delete();
     } catch (e) {
       throw Exception('Failed to delete export: $e');
     }

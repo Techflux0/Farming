@@ -8,6 +8,7 @@ import 'other_payments.dart';
 import '../farm/notify.dart';
 import '../farm/chat.dart';
 import '../farm/profile.dart';
+import 'downloader.dart';
 
 class TreasurerDashboard extends StatefulWidget {
   const TreasurerDashboard({super.key});
@@ -269,6 +270,25 @@ class _TreasurerDashboardState extends State<TreasurerDashboard> {
                 ),
               ),
               child: const Text('Refresh'),
+            ),
+          ),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                final downloader = ExportDownloader();
+                await downloader.downloadAllExports(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.lightBlue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Export Data'),
             ),
           ),
         ],

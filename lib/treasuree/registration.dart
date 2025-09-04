@@ -1,9 +1,10 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, unused_element
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../farm/notify.dart';
+import 'export_registration.dart';
 
 class RegistrationFeePage extends StatefulWidget {
   const RegistrationFeePage({super.key});
@@ -14,13 +15,21 @@ class RegistrationFeePage extends StatefulWidget {
 
 class _RegistrationFeePageState extends State<RegistrationFeePage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _amountPayableController = TextEditingController();
+  final _amountPayableController = TextEditingController(text: '2000');
   final _amountPaidController = TextEditingController();
   final _searchController = TextEditingController();
+  final _memberSearchController = TextEditingController();
   DateTime? _selectedDate;
   String _searchQuery = '';
   bool _isSubmitting = false;
+  String? _selectedMemberId;
+  String? _selectedMemberName;
+  List<Map<String, dynamic>> _members = [];
+  List<Map<String, dynamic>> _filteredMembers = [];
+  bool _isLoadingMembers = true;
+  OverlayEntry? _overlayEntry;
+  final LayerLink _layerLink = LayerLink();
+  final FocusNode _memberFocusNode = FocusNode();
 
   DocumentSnapshot? _editingDoc;
 
@@ -28,6 +37,139 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
     final payable = double.tryParse(_amountPayableController.text) ?? 0;
     final paid = double.tryParse(_amountPaidController.text) ?? 0;
     return payable - paid;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMembers();
+    _selectedDate = DateTime.now();
+
+    _memberFocusNode.addListener(() {
+      if (_memberFocusNode.hasFocus) {
+        _showOverlay();
+      } else {
+        _removeOverlay();
+      }
+    });
+
+    _memberSearchController.addListener(() {
+      _filterMembers(_memberSearchController.text);
+    });
+
+    _amountPaidController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _memberFocusNode.dispose();
+    _memberSearchController.dispose();
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _filterMembers(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredMembers = _members;
+      } else {
+        _filteredMembers = _members.where((member) {
+          final name = member['fullname'].toString().toLowerCase();
+          return name.contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
+  void _showOverlay() {
+    if (_overlayEntry != null) return;
+
+    final overlay = Overlay.of(context);
+    final renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        width: size.width,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: const Offset(0, 50),
+          child: Material(
+            elevation: 4,
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: _filteredMembers.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('No members found'),
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _filteredMembers.length,
+                      itemBuilder: (context, index) {
+                        final member = _filteredMembers[index];
+                        return ListTile(
+                          title: Text(member['fullname']),
+                          onTap: () {
+                            _selectMember(member);
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(_overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    if (_overlayEntry != null) {
+      _overlayEntry!.remove();
+      _overlayEntry = null;
+    }
+  }
+
+  void _selectMember(Map<String, dynamic> member) {
+    setState(() {
+      _selectedMemberId = member['id'];
+      _selectedMemberName = member['fullname'];
+      _memberSearchController.text = member['fullname'];
+      _removeOverlay();
+      _memberFocusNode.unfocus();
+    });
+  }
+
+  Future<void> _fetchMembers() async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .orderBy('fullname')
+          .get();
+
+      setState(() {
+        _members = querySnapshot.docs.map((doc) {
+          return {'id': doc.id, 'fullname': doc['fullname'] ?? 'Unknown'};
+        }).toList();
+        _filteredMembers = _members;
+        _isLoadingMembers = false;
+      });
+    } catch (e) {
+      debugPrint('Error fetching members: $e');
+      setState(() {
+        _isLoadingMembers = false;
+      });
+    }
   }
 
   Future<void> _pickDate(BuildContext context) async {
@@ -45,11 +187,21 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedMemberId == null) {
+      NotificationBar.show(
+        context: context,
+        message: 'Please select a member',
+        isError: true,
+      );
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 
     final data = {
-      'name': _nameController.text.trim(),
+      'name': _selectedMemberName,
+      'user_id': _selectedMemberId,
+      'fullname': _selectedMemberName,
       'amount_payable': double.parse(_amountPayableController.text),
       'amount_paid': double.parse(_amountPaidController.text),
       'balance': balance,
@@ -93,12 +245,23 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
     }
   }
 
+  Future<void> _exportData() async {
+    // Sample function for export - to be implemented later
+    NotificationBar.show(
+      context: context,
+      message: 'Export functionality will be implemented soon',
+      isError: false,
+    );
+  }
+
   void _resetForm() {
     _formKey.currentState?.reset();
-    _nameController.clear();
-    _amountPayableController.clear();
+    _selectedMemberId = null;
+    _selectedMemberName = null;
+    _memberSearchController.clear();
+    _amountPayableController.text = '2000';
     _amountPaidController.clear();
-    _selectedDate = null;
+    _selectedDate = DateTime.now();
     _editingDoc = null;
     setState(() {});
   }
@@ -107,7 +270,9 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
     final data = doc.data() as Map<String, dynamic>;
     setState(() {
       _editingDoc = doc;
-      _nameController.text = data['name'];
+      _selectedMemberId = data['user_id'];
+      _selectedMemberName = data['fullname'] ?? data['name'];
+      _memberSearchController.text = _selectedMemberName!;
       _amountPayableController.text = data['amount_payable'].toString();
       _amountPaidController.text = data['amount_paid'].toString();
       _selectedDate = (data['payment_date'] as Timestamp).toDate();
@@ -192,17 +357,13 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
   }
 
   @override
-  void dispose() {
-    _nameController.dispose();
-    _amountPayableController.dispose();
-    _amountPaidController.dispose();
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Registration Fees'),
+        backgroundColor: Colors.lightBlue,
+        foregroundColor: Colors.white,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -211,20 +372,57 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
               key: _formKey,
               child: Column(
                 children: [
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Member Name',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.person, color: Colors.lightBlue),
+                  // Member Name Dropdown with Search (using your approach)
+                  CompositedTransformTarget(
+                    link: _layerLink,
+                    child: TextFormField(
+                      controller: _memberSearchController,
+                      focusNode: _memberFocusNode,
+                      decoration: InputDecoration(
+                        labelText: 'Select Member',
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(
+                          Icons.person,
+                          color: Colors.lightBlue,
+                        ),
+                        suffixIcon: _isLoadingMembers
+                            ? const Padding(
+                                padding: EdgeInsets.all(10),
+                                child: SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : IconButton(
+                                icon: const Icon(Icons.arrow_drop_down),
+                                onPressed: () {
+                                  if (_memberFocusNode.hasFocus) {
+                                    _memberFocusNode.unfocus();
+                                  } else {
+                                    _memberFocusNode.requestFocus();
+                                  }
+                                },
+                              ),
+                      ),
+                      validator: (value) => _selectedMemberId == null
+                          ? 'Please select a member'
+                          : null,
+                      onTap: () {
+                        if (_overlayEntry == null) {
+                          _showOverlay();
+                        }
+                      },
                     ),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Enter member name' : null,
                   ),
                   const SizedBox(height: 15),
+                  // Amount Payable (readonly)
                   TextFormField(
                     controller: _amountPayableController,
                     keyboardType: TextInputType.number,
+                    readOnly: true,
                     decoration: const InputDecoration(
                       labelText: 'Amount Payable (KES)',
                       border: OutlineInputBorder(),
@@ -233,23 +431,15 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                         color: Colors.lightBlue,
                       ),
                     ),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Enter amount payable' : null,
                   ),
                   const SizedBox(height: 15),
                   TextFormField(
                     controller: _amountPaidController,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Amount Paid (KES)',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: Colors.lightBlue,
-                          width: 1,
-                        ),
-                      ),
-                      prefixIcon: const Icon(
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(
                         Icons.monetization_on,
                         color: Colors.lightBlue,
                       ),
@@ -278,28 +468,71 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                   const SizedBox(height: 10),
                   Text(
                     'Balance: KES ${balance.toStringAsFixed(2)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: Colors.red,
+                      color: balance > 0 ? Colors.red : Colors.green,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: _isSubmitting ? null : _submit,
-                    icon: Icon(_editingDoc == null ? Icons.add : Icons.update),
-                    label: Text(_editingDoc == null ? 'Submit' : 'Update'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.lightBlue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _isSubmitting ? null : _submit,
+                          icon: Icon(
+                            _editingDoc == null ? Icons.add : Icons.update,
+                          ),
+                          label: Text(
+                            _editingDoc == null ? 'Submit' : 'Update',
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.lightBlue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      const SizedBox(width: 10),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          final exporter = RegistrationExporter();
+                          try {
+                            final filePath = await exporter
+                                .exportRegistrationToExcel(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('✅ Export saved: $filePath'),
+                                duration: const Duration(seconds: 3),
+                              ),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('❌ Export failed: $e'),
+                                duration: const Duration(seconds: 3),
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.download),
+                        label: const Text('Export'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -344,7 +577,9 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                 }
 
                 final docs = snapshot.data!.docs.where((doc) {
-                  final name = (doc['name'] ?? '').toString().toLowerCase();
+                  final name = (doc['fullname'] ?? doc['name'] ?? '')
+                      .toString()
+                      .toLowerCase();
                   return name.contains(_searchQuery);
                 }).toList();
 
@@ -355,6 +590,7 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                   itemBuilder: (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
                     final docId = docs[index].id;
+                    final name = data['fullname'] ?? data['name'] ?? '';
 
                     return Card(
                       shape: RoundedRectangleBorder(
@@ -370,7 +606,7 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                           Icons.person,
                           color: Colors.lightBlue,
                         ),
-                        title: Text(data['name']),
+                        title: Text(name),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -386,22 +622,33 @@ class _RegistrationFeePageState extends State<RegistrationFeePage> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
+                            if (data['payment_date'] != null)
+                              Text(
+                                'Date: ${DateFormat('yyyy-MM-dd').format((data['payment_date'] as Timestamp).toDate())}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
                           ],
                         ),
-                        trailing: TextButton(
-                          onPressed: () => _deleteRecord(docId, data['name']),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.red[700],
-                            padding: const EdgeInsets.symmetric(vertical: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.edit,
+                                color: Colors.blue,
+                                size: 20,
+                              ),
+                              onPressed: () => _startEdit(docs[index]),
                             ),
-                          ),
-                          child: const Text(
-                            'Delete',
-                            style: TextStyle(fontSize: 10),
-                          ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                              onPressed: () => _deleteRecord(docId, name),
+                            ),
+                          ],
                         ),
                       ),
                     );

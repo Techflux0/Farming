@@ -36,7 +36,7 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
   DocumentSnapshot? _editingDoc;
 
   double get baseAmountPayable {
-    return 1000.0; // Base monthly payment amount
+    return 200.0;
   }
 
   double get calculatedAmountPayable {
@@ -167,7 +167,6 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
       _memberFocusNode.unfocus();
     });
 
-    // Check if member has existing payment for the current month
     await _checkExistingPayment();
   }
 
@@ -196,7 +195,6 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
           _updateAmountPayable();
         });
       } else {
-        // Check if member has previous debt
         final debtQuery = await FirebaseFirestore.instance
             .collection('monthly_payment')
             .where('member_id', isEqualTo: _selectedMemberId)
@@ -296,7 +294,6 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
 
     try {
       if (_editingDoc != null) {
-        // Update existing record
         await FirebaseFirestore.instance
             .collection('monthly_payment')
             .doc(_editingDoc!.id)
@@ -306,7 +303,6 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
           const SnackBar(content: Text('✔ Record updated successfully')),
         );
       } else if (_hasExistingPayment && _existingPaymentId != null) {
-        // Update existing monthly payment
         await FirebaseFirestore.instance
             .collection('monthly_payment')
             .doc(_existingPaymentId)
@@ -316,7 +312,6 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
           const SnackBar(content: Text('✔ Payment updated successfully')),
         );
       } else {
-        // Create new payment record
         await FirebaseFirestore.instance
             .collection('monthly_payment')
             .add(data);
@@ -377,7 +372,6 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
   }
 
   Future<void> _exportData() async {
-    // Placeholder for export functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('📊 Export functionality will be implemented'),
@@ -388,7 +382,7 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('💰 Monthly Payment')),
+      appBar: AppBar(title: const Text(' Monthly Payment')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -397,7 +391,6 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  // Searchable member selection field
                   CompositedTransformTarget(
                     link: _layerLink,
                     child: TextFormField(
@@ -592,14 +585,6 @@ class _MonthlyPaymentPageState extends State<MonthlyPaymentPage> {
                         },
                         icon: const Icon(Icons.download),
                         label: const Text('Export'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
                       ),
                     ],
                   ),

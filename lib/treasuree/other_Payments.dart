@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:excel/excel.dart' as ex;
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
 
 class OtherPaymentPage extends StatefulWidget {
   const OtherPaymentPage({super.key});
@@ -13,13 +18,143 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
   final TextEditingController _paymentTypeController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _memberSearchController = TextEditingController();
 
   final List<Map<String, dynamic>> _payments = [];
+  List<Map<String, dynamic>> _members = [];
+  List<Map<String, dynamic>> _filteredMembers = [];
+  bool _isLoadingMembers = true;
+  OverlayEntry? _overlayEntry;
+  final LayerLink _layerLink = LayerLink();
+  final FocusNode _memberFocusNode = FocusNode();
+  String? _selectedMemberId;
 
   @override
   void initState() {
     super.initState();
     _loadPayments();
+    _fetchMembers();
+
+    _memberFocusNode.addListener(() {
+      if (_memberFocusNode.hasFocus) {
+        _showOverlay();
+      } else {
+        _removeOverlay();
+      }
+    });
+
+    _memberSearchController.addListener(() {
+      _filterMembers(_memberSearchController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _memberFocusNode.dispose();
+    _memberSearchController.dispose();
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _filterMembers(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredMembers = _members;
+      } else {
+        _filteredMembers = _members.where((member) {
+          final name = member['fullname'].toString().toLowerCase();
+          return name.contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
+  void _showOverlay() {
+    if (_overlayEntry != null) return;
+
+    final overlay = Overlay.of(context);
+    final renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        width: size.width,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: const Offset(0, 50),
+          child: Material(
+            elevation: 4,
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: _filteredMembers.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('No members found'),
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _filteredMembers.length,
+                      itemBuilder: (context, index) {
+                        final member = _filteredMembers[index];
+                        return ListTile(
+                          title: Text(member['fullname']),
+                          onTap: () {
+                            _selectMember(member);
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(_overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    if (_overlayEntry != null) {
+      _overlayEntry!.remove();
+      _overlayEntry = null;
+    }
+  }
+
+  void _selectMember(Map<String, dynamic> member) {
+    setState(() {
+      _selectedMemberId = member['id'];
+      _memberSearchController.text = member['fullname'];
+      _removeOverlay();
+      _memberFocusNode.unfocus();
+    });
+  }
+
+  Future<void> _fetchMembers() async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .orderBy('fullname')
+          .get();
+
+      setState(() {
+        _members = querySnapshot.docs.map((doc) {
+          return {'id': doc.id, 'fullname': doc['fullname'] ?? 'Unknown'};
+        }).toList();
+        _filteredMembers = _members;
+        _isLoadingMembers = false;
+      });
+    } catch (e) {
+      debugPrint('Error fetching members: $e');
+      setState(() {
+        _isLoadingMembers = false;
+      });
+    }
   }
 
   Future<void> _loadPayments() async {
@@ -51,7 +186,7 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
   }
 
   Future<void> _addPayment() async {
-    if (_nameController.text.isEmpty ||
+    if (_memberSearchController.text.isEmpty ||
         _paymentTypeController.text.isEmpty ||
         _amountController.text.isEmpty) {
       print("❌ Some fields are empty");
@@ -59,7 +194,8 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
     }
 
     final paymentData = {
-      'name': _nameController.text.trim(),
+      'name': _memberSearchController.text.trim(),
+      'user_id': _selectedMemberId,
       'type': _paymentTypeController.text.trim(),
       'amount_paid': double.tryParse(_amountController.text.trim()) ?? 0.0,
       'date': DateTime.now().toString().substring(0, 10),
@@ -73,9 +209,10 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
 
       setState(() {
         _payments.add({...paymentData, 'docId': docRef.id});
-        _nameController.clear();
+        _memberSearchController.clear();
         _paymentTypeController.clear();
         _amountController.clear();
+        _selectedMemberId = null;
       });
     } catch (e) {
       print("❌ Failed to add to Firestore: $e");
@@ -102,9 +239,10 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
 
   void _editPayment(int index) {
     final payment = _filteredPayments[index];
-    _nameController.text = payment['name'];
+    _memberSearchController.text = payment['name'];
     _paymentTypeController.text = payment['type'];
     _amountController.text = payment['amount_paid'].toString();
+    _selectedMemberId = payment['user_id'];
 
     showDialog(
       context: context,
@@ -115,7 +253,8 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
           TextButton(
             onPressed: () async {
               final updatedData = {
-                'name': _nameController.text.trim(),
+                'name': _memberSearchController.text.trim(),
+                'user_id': _selectedMemberId,
                 'type': _paymentTypeController.text.trim(),
                 'amount_paid':
                     double.tryParse(_amountController.text.trim()) ?? 0.0,
@@ -140,9 +279,10 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
                 });
 
                 Navigator.pop(context);
-                _nameController.clear();
+                _memberSearchController.clear();
                 _paymentTypeController.clear();
                 _amountController.clear();
+                _selectedMemberId = null;
               } catch (e) {
                 print("❌ Failed to update: $e");
               }
@@ -156,6 +296,80 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _exportData() async {
+    try {
+      final excel = ex.Excel.createExcel();
+      final sheet = excel['Other Payments'];
+
+      // Add headers
+      sheet.appendRow([
+        ex.TextCellValue('Member Name'),
+        ex.TextCellValue('Payment Type'),
+        ex.TextCellValue('Amount Paid (KES)'),
+        ex.TextCellValue('Date'),
+      ]);
+
+      // Add data rows
+      for (final payment in _filteredPayments) {
+        sheet.appendRow([
+          ex.TextCellValue(payment['name']),
+          ex.TextCellValue(payment['type']),
+          ex.TextCellValue(payment['amount_paid'].toString()),
+          ex.TextCellValue(payment['date']),
+        ]);
+      }
+
+      // Add totals
+      final totalAmount = _filteredPayments.fold(
+        0.0,
+        (sum, item) => sum + (item['amount_paid'] ?? 0.0),
+      );
+
+      sheet.appendRow([ex.TextCellValue('')]);
+      sheet.appendRow([
+        ex.TextCellValue('TOTALS:'),
+        ex.TextCellValue(''),
+        ex.TextCellValue(totalAmount.toStringAsFixed(2)),
+        ex.TextCellValue(''),
+      ]);
+
+      // Save the document
+      final String fileName =
+          'Other_Payments_Export_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.xlsx';
+      final fileBytes = excel.save();
+
+      if (fileBytes == null) {
+        throw Exception('Failed to generate Excel file');
+      }
+
+      // Get directory path
+      final directory = await getApplicationDocumentsDirectory();
+      final path = directory.path;
+      final filePath = '$path/$fileName';
+
+      // Write to file
+      final file = File(filePath);
+      await file.writeAsBytes(fileBytes);
+
+      // Open the file
+      await OpenFile.open(filePath);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✅ Export saved: $filePath'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Export failed: $e'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   double get _totalAmount => _filteredPayments.fold(
@@ -197,12 +411,44 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
           // Input Row
           Row(
             children: [
+              // Member Dropdown
               Expanded(
-                child: TextField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Member Name',
-                    border: OutlineInputBorder(),
+                child: CompositedTransformTarget(
+                  link: _layerLink,
+                  child: TextFormField(
+                    controller: _memberSearchController,
+                    focusNode: _memberFocusNode,
+                    decoration: InputDecoration(
+                      labelText: 'Select Member',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.person),
+                      suffixIcon: _isLoadingMembers
+                          ? const Padding(
+                              padding: EdgeInsets.all(10),
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : IconButton(
+                              icon: const Icon(Icons.arrow_drop_down),
+                              onPressed: () {
+                                if (_memberFocusNode.hasFocus) {
+                                  _memberFocusNode.unfocus();
+                                } else {
+                                  _memberFocusNode.requestFocus();
+                                }
+                              },
+                            ),
+                    ),
+                    onTap: () {
+                      if (_overlayEntry == null) {
+                        _showOverlay();
+                      }
+                    },
                   ),
                 ),
               ),
@@ -227,19 +473,39 @@ class _OtherPaymentPageState extends State<OtherPaymentPage> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Submit and Export Buttons
+          Row(
+            children: [
               ElevatedButton(
                 onPressed: _addPayment,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
-                    vertical: 18,
+                    vertical: 15,
                   ),
                 ),
                 child: const Text(
                   'Submit',
                   style: TextStyle(color: Colors.white),
+                ),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton.icon(
+                onPressed: _exportData,
+                icon: const Icon(Icons.download),
+                label: const Text('Export'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 15,
+                  ),
                 ),
               ),
             ],
