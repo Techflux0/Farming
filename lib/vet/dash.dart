@@ -4,6 +4,7 @@ import '../farm/weather.dart';
 import '../farm/profile.dart';
 import 'drugs.dart';
 import '../farm/chat.dart';
+import 'treat.dart';
 
 class VetDashboard extends StatefulWidget {
   const VetDashboard({super.key});
@@ -17,7 +18,7 @@ class _VetDashboardState extends State<VetDashboard> {
 
   final List<Widget> _screens = [
     const VeterinaryLivestockPage(),
-    const WeatherPage(),
+    const MedicalTreatmentScreen(),
     const FarmerDrugsPage(),
     const ChatPage(),
     const ProfilePage(),
@@ -39,7 +40,7 @@ class _VetDashboardState extends State<VetDashboard> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Animals'),
-          BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Weather'),
+          BottomNavigationBarItem(icon: Icon(Icons.healing), label: 'Treat'),
           BottomNavigationBarItem(
             icon: Icon(Icons.medical_services),
             label: 'Drugs',

@@ -25,17 +25,17 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Update Checker Demo')),
+      appBar: AppBar(title: const Text('Update Checker')),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Welcome to the App',
+              'Ooops! An Update is Available',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
-            Text('Current Version: 1.0.0-Beta'),
+            Text('Current Version: 1.0.071-Beta'),
             SizedBox(height: 40),
             UpdateChecker(),
           ],
@@ -53,7 +53,7 @@ class UpdateChecker extends StatefulWidget {
 }
 
 class _UpdateCheckerState extends State<UpdateChecker> {
-  final String currentVersion = "4.5.6-Beta";
+  final String currentVersion = "1.0.071-Beta";
   final String versionUrl = "https://pastebin.com/raw/RGqzqJai";
   final String updateLinkUrl = "https://pastebin.com/raw/n5d1RzeX";
 
