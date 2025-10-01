@@ -64,7 +64,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       }
 
       // If user signed up with email/password, send reset email
-      await _auth.sendPasswordResetEmail(email: email);
+      await _auth.sendPasswordResetEmail(
+        email: email,
+        actionCodeSettings: ActionCodeSettings(
+          url: "https://techflux0.github.io/Farming/",
+          handleCodeInApp: true,
+          androidPackageName: "com.farm.app",
+          androidInstallApp: true,
+          androidMinimumVersion: "1",
+        ),
+      );
 
       setState(() {
         _emailSent = true;

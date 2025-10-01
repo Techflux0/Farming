@@ -264,18 +264,23 @@
     </form>
 
     <div class="login-link">
-      Remember your password? <a href="helper/h1.html">Back to Login</a>
+      Remember your password? <a href="#" id="loginLink">Back to Login</a>
     </div>
   </div>
 
   <script>
+    // Use the same Firebase config from your other file
     const firebaseConfig = {
       apiKey: "AIzaSyDlMOUVJKTmBlxUjhGpLk82-XxUQvsQv50",
       authDomain: "farm-535d5.firebaseapp.com",
       projectId: "farm-535d5",
-      appId: "1:1026545670025:web:da284ae27bbbf6da017358"
+      storageBucket: "farm-535d5.firebasestorage.app",
+      messagingSenderId: "1026545670025",
+      appId: "1:1026545670025:web:da284ae27bbbf6da017358",
+      measurementId: "G-L6H1GB50VW"
     };
 
+    // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
@@ -288,6 +293,24 @@
     const errorMessage = document.getElementById('errorMessage');
     const successMessage = document.getElementById('successMessage');
     const passwordMatch = document.getElementById('passwordMatch');
+    const loginLink = document.getElementById('loginLink');
+
+    // Set up login link behavior
+    loginLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Option 1: Redirect to your Flutter web app login page
+      window.location.href = 'https://farm-535d5.firebaseapp.com/login';
+      
+      // Option 2: If you have a custom domain, use:
+      // window.location.href = 'https://yourapp.com/login';
+      
+      // Option 3: Go back to the main app (if this is embedded)
+      // window.location.href = '/';
+      
+      // Option 4: Close this page and return to app (for mobile)
+      // window.close(); // May not work in all browsers
+    });
 
     if (!oobCode) {
       showError('Invalid or expired reset link. Please request a new password reset.');
@@ -392,8 +415,9 @@
         confirmPasswordInput.value = '';
         passwordMatch.style.display = 'none';
         
+        // Redirect to login page after success
         setTimeout(() => {
-          window.location.href = '/farm/login';
+          window.location.href = 'https://farm-535d5.firebaseapp.com/login';
         }, 3000);
         
       } catch (error) {
