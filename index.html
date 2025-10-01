@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Password Reset</title>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"></script>
+</head>
+<body>
+  <h2>Reset Your Password</h2>
+  <input type="password" id="newPassword" placeholder="New Password" />
+  <button onclick="resetPassword()">Reset</button>
+
+  <script>
+    // TODO: replace with your Firebase project config
+    const firebaseConfig = {
+      apiKey: "AIza....",
+      authDomain: "yourproject.firebaseapp.com",
+      projectId: "yourproject",
+      appId: "1:1234567890:web:xxxx"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const oobCode = urlParams.get("oobCode");
+
+    function resetPassword() {
+      const newPassword = document.getElementById("newPassword").value;
+
+      auth.verifyPasswordResetCode(oobCode)
+        .then(email => {
+          return auth.confirmPasswordReset(oobCode, newPassword);
+        })
+        .then(() => {
+          alert("Password reset successful. You can now log in.");
+        })
+        .catch(err => {
+          alert("Error: " + err.message);
+        });
+    }
+  </script>
+</body>
+</html>
