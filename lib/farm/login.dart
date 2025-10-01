@@ -8,6 +8,7 @@ import '../farmer/dash.dart';
 import '../vet/dash.dart';
 import '../secretary/home.dart';
 import '../treasuree/dash.dart';
+import 'forgot_pass.dart';
 
 class EmailLoginPage extends StatefulWidget {
   const EmailLoginPage({super.key});
@@ -44,8 +45,24 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
     });
 
     try {
+      final email = _emailController.text.trim();
+
+      // Check if user signed up with Google
+      final authProviders = await _auth.fetchSignInMethodsForEmail(email);
+
+      if (authProviders.contains('google.com')) {
+        NotificationBar.show(
+          context: context,
+          message:
+              'This account uses Google Sign-In. Please use Google to login.',
+          isError: true,
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
       final userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
+        email: email,
         password: _passwordController.text.trim(),
       );
 
@@ -54,9 +71,8 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
       _handleAuthError(e);
     } catch (e) {
       NotificationBar.show(
-        // ignore: use_build_context_synchronously
         context: context,
-        message: e.toString(),
+        message: 'An unexpected error occurred. Please try again.',
         isError: true,
       );
     } finally {
@@ -193,7 +209,6 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
             (route) => false,
           );
           break;
-
         case 'secretary':
           Navigator.pushAndRemoveUntil(
             context,
@@ -226,14 +241,11 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
       barrierDismissible: false,
       builder: (context) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            dialogBackgroundColor: Colors.white,
-            // Removed dialogTheme property, set shape in AlertDialog below
-          ),
+          data: Theme.of(context).copyWith(dialogBackgroundColor: Colors.white),
           child: AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: Colors.lightBlue, width: 2),
+              side: const BorderSide(color: Colors.lightBlue, width: 2),
             ),
             title: const Text(
               'Choose Login',
@@ -340,82 +352,142 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
     }
   }
 
+  void _navigateToForgotPassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+    );
+  }
+
+  void _navigateToSignUp() {
+    Navigator.pushReplacementNamed(context, '/farm/signup');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Login'),
+        title: const Text(
+          'Login',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blue,
         elevation: 0,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            Image.asset('assets/scafold/goat.png', height: 60),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
+            // Logo
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Image.asset(
+                  'assets/scafold/goat.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            // Welcome Text
             const Text(
               'Welcome Back',
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: Colors.blue,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
+            const Text(
+              'Sign in to continue to your account',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 30),
+
+            // Error Message
             if (_errorMessage != null)
               Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
                   color: Colors.red[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red.shade200),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error, color: Colors.red),
-                    const SizedBox(width: 10),
+                    Icon(Icons.error_outline, color: Colors.red[700]),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         _errorMessage!,
-                        style: const TextStyle(color: Colors.red),
+                        style: TextStyle(color: Colors.red[700], fontSize: 14),
                       ),
                     ),
                   ],
                 ),
               ),
+
+            // Login Form Card
             Card(
-              elevation: 0,
+              elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                // side: const BorderSide(color: Colors.lightBlue, width: 2),
+                borderRadius: BorderRadius.circular(16),
               ),
+              shadowColor: Colors.blue.withOpacity(0.2),
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(24.0),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     children: [
+                      // Email Field
                       TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: const Icon(Icons.email),
+                          labelText: 'Email Address',
+                          labelStyle: const TextStyle(color: Colors.grey),
+                          prefixIcon: const Icon(
+                            Icons.email,
+                            color: Colors.blue,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: Colors.lightBlue,
+                              color: Colors.blue,
+                              width: 2,
                             ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 14,
+                            horizontal: 16,
+                            vertical: 16,
                           ),
                         ),
                         keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your email';
@@ -428,18 +500,25 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 20),
+
+                      // Password Field
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock),
+                          labelStyle: const TextStyle(color: Colors.grey),
+                          prefixIcon: const Icon(
+                            Icons.lock,
+                            color: Colors.blue,
+                          ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
                                   ? Icons.visibility
                                   : Icons.visibility_off,
+                              color: Colors.grey,
                             ),
                             onPressed: () => setState(
                               () => _obscurePassword = !_obscurePassword,
@@ -447,15 +526,21 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: Colors.lightBlue,
+                              color: Colors.blue,
+                              width: 2,
                             ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 14,
+                            horizontal: 16,
+                            vertical: 16,
                           ),
                         ),
+                        textInputAction: TextInputAction.done,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your password';
@@ -466,56 +551,107 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 16),
+
+                      // Forgot Password
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/forgot-password'),
-                          child: const Text('Forgot Password?'),
+                          onPressed: _navigateToForgotPassword,
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.blue,
+                            padding: EdgeInsets.zero,
+                          ),
+                          child: const Text(
+                            'Forgot Password?',
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
+
+                      // Login Button
                       SizedBox(
                         width: double.infinity,
-                        height: 48,
+                        height: 52,
                         child: ElevatedButton(
                           onPressed: _isLoading
                               ? null
                               : _loginWithEmailPassword,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            elevation: 4,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            disabledBackgroundColor: Colors.blue.withOpacity(
+                              0.5,
                             ),
                           ),
                           child: _isLoading
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 )
                               : const Text(
                                   'Login',
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
                                   ),
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 14),
-                      const Text('OR', style: TextStyle(color: Colors.grey)),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
+
+                      // Divider
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              color: Colors.grey[300],
+                              thickness: 1,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'OR',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(
+                              color: Colors.grey[300],
+                              thickness: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Google Sign In Button
                       SizedBox(
                         width: double.infinity,
-                        height: 40,
+                        height: 52,
                         child: OutlinedButton(
                           onPressed: _isLoading ? null : _signInWithGoogle,
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.lightBlue),
+                            foregroundColor: Colors.black87,
+                            side: BorderSide(color: Colors.grey[300]!),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+                            backgroundColor: Colors.white,
+                            elevation: 2,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -523,32 +659,40 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                               Image.asset(
                                 'assets/scafold/google.png',
                                 height: 24,
+                                width: 24,
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 12),
                               const Text(
                                 'Continue with Google',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
+
+                      // Sign Up Link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text("Don't have an account?"),
+                          const Text(
+                            "Don't have an account?",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          const SizedBox(width: 8),
                           TextButton(
-                            onPressed: () => Navigator.pushReplacementNamed(
-                              context,
-                              '/farm/signup',
+                            onPressed: _navigateToSignUp,
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.blue,
+                              padding: EdgeInsets.zero,
                             ),
                             child: const Text(
                               'Sign Up',
-                              style: TextStyle(color: Colors.blue),
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -557,6 +701,14 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                   ),
                 ),
               ),
+            ),
+            const SizedBox(height: 20),
+
+            // Footer Text
+            const Text(
+              'By continuing, you agree to our Terms of Service\nand Privacy Policy',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ],
         ),
