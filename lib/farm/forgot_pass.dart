@@ -37,7 +37,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     try {
       final email = _emailController.text.trim();
 
-      // Check if user exists and their sign-in method
       final userDoc = await _getUserByEmail(email);
 
       if (userDoc == null || !userDoc.exists) {
@@ -63,7 +62,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         return;
       }
 
-      // If user signed up with email/password, send reset email
       await _auth.sendPasswordResetEmail(
         email: email,
         actionCodeSettings: ActionCodeSettings(
