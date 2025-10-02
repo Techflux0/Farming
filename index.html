@@ -262,7 +262,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
     import { getAuth, verifyPasswordResetCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
-    // ✅ Firebase config (your values)
     const firebaseConfig = {
       apiKey: "AIzaSyDlMOUVJKTmBlxUjhGpLk82-XxUQvsQv50",
       authDomain: "farm-535d5.firebaseapp.com",
@@ -272,11 +271,9 @@
       appId: "1:1026545670025:web:da284ae27bbbf6da017358",
     };
 
-    // ✅ Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // ✅ Extract oobCode from URL
     const urlParams = new URLSearchParams(window.location.search);
     const oobCode = urlParams.get("oobCode");
 
@@ -323,25 +320,21 @@
       message.style.display = 'none';
 
       try {
-        // ✅ Verify the reset code is valid
         const email = await verifyPasswordResetCode(auth, oobCode);
         console.log("Resetting password for:", email);
 
-        // ✅ Confirm the reset with new password
         await confirmPasswordReset(auth, oobCode, newPassword);
         
         showMessage("✅ Password reset successful! You can now log in.", false);
         
-        // Clear form
         document.getElementById("newPassword").value = '';
         document.getElementById("confirmPassword").value = '';
         
-        // Optional redirect
-        setTimeout(() => window.location.href = "https://farm-535d5.firebaseapp.com/login", 3000);
+        setTimeout(() => window.location.href = "helper/h1.html", 3000);
 
       } catch (error) {
         console.error(error);
-        let errorMsg = "❌ Error: ";
+        let errorMsg = "Ooops!";
         
         switch (error.code) {
           case 'auth/expired-action-code':
