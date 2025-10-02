@@ -4,428 +4,69 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reset Password - Tuiymet</title>
-  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .container {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-      padding: 40px;
-      width: 100%;
-      max-width: 450px;
-      text-align: center;
-    }
-
-    .logo {
-      width: 100px;
-      height: 100px;
-      margin: 0 auto 20px;
-      background: #f8f9fa;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .logo img {
-      width: 60px;
-      height: 60px;
-    }
-
-    h1 {
-      color: #2c3e50;
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      color: #7f8c8d;
-      font-size: 16px;
-      margin-bottom: 30px;
-      line-height: 1.5;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-      text-align: left;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: #2c3e50;
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    .input-group {
-      position: relative;
-    }
-
-    input {
-      width: 100%;
-      padding: 15px 45px 15px 15px;
-      border: 2px solid #e9ecef;
-      border-radius: 12px;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      background: #f8f9fa;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #3498db;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-    }
-
-    .password-toggle {
-      position: absolute;
-      right: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: #7f8c8d;
-      cursor: pointer;
-      font-size: 18px;
-    }
-
-    .password-toggle:hover {
-      color: #3498db;
-    }
-
-    .error-message {
-      background: #fee;
-      color: #e74c3c;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border: 1px solid #f5c6cb;
-      display: none;
-    }
-
-    .success-message {
-      background: #efffed;
-      color: #27ae60;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border: 1px solid #c3e6cb;
-      display: none;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 15px;
-      background: linear-gradient(135deg, #3498db, #2980b9);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 10px;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid #ffffff;
-      border-radius: 50%;
-      border-top-color: transparent;
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .login-link {
-      margin-top: 25px;
-      color: #7f8c8d;
-      font-size: 14px;
-    }
-
-    .login-link a {
-      color: #3498db;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .login-link a:hover {
-      text-decoration: underline;
-    }
-
-    .password-match {
-      font-size: 12px;
-      margin-top: 5px;
-      display: none;
-    }
-
-    .match-valid {
-      color: #27ae60;
-    }
-
-    .match-invalid {
-      color: #e74c3c;
-    }
-
-    @media (max-width: 480px) {
-      .container {
-        padding: 30px 20px;
-        margin: 10px;
-      }
-      
-      h1 {
-        font-size: 24px;
-      }
-    }
-  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo">
-        <img src="./assets/launcher/goat.png" alt="Tuiymet Logo">
-    </div>
+  <h2>Reset your password</h2>
+  <form id="resetForm">
+    <input type="password" id="newPassword" placeholder="New password" required>
+    <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+    <button type="submit">Reset Password</button>
+  </form>
 
-    <h1>Reset Password</h1>
-    <p class="subtitle">Create a new secure password for your account</p>
+  <div id="message"></div>
 
-    <div id="errorMessage" class="error-message"></div>
-    <div id="successMessage" class="success-message"></div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { getAuth, verifyPasswordResetCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
-    <form id="resetForm">
-      <div class="form-group">
-        <label for="newPassword">New Password</label>
-        <div class="input-group">
-          <input 
-            type="password" 
-            id="newPassword" 
-            placeholder="Enter your new password" 
-            required
-          />
-          <button type="button" class="password-toggle" onclick="togglePassword('newPassword')">
-            👁️
-          </button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="confirmPassword">Confirm Password</label>
-        <div class="input-group">
-          <input 
-            type="password" 
-            id="confirmPassword" 
-            placeholder="Confirm your new password" 
-            required
-          />
-          <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
-            👁️
-          </button>
-        </div>
-        <div class="password-match" id="passwordMatch"></div>
-      </div>
-
-      <button type="submit" class="btn" id="resetButton">
-        <span id="buttonText">Reset Password</span>
-        <span id="buttonLoading" class="loading" style="display: none;"></span>
-      </button>
-    </form>
-
-    <div class="login-link">
-      Remember your password? <a href="helper/h1.html">Back to Login</a>
-    </div>
-  </div>
-
-  <script>
+    // ✅ Firebase config (your values)
     const firebaseConfig = {
       apiKey: "AIzaSyDlMOUVJKTmBlxUjhGpLk82-XxUQvsQv50",
       authDomain: "farm-535d5.firebaseapp.com",
       projectId: "farm-535d5",
-      appId: "1:1026545670025:web:da284ae27bbbf6da017358"
+      storageBucket: "farm-535d5.appspot.com",
+      messagingSenderId: "1026545670025",
+      appId: "1:1026545670025:web:da284ae27bbbf6da017358",
     };
 
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    // ✅ Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
+    // ✅ Extract oobCode from URL
     const urlParams = new URLSearchParams(window.location.search);
     const oobCode = urlParams.get("oobCode");
 
-    const newPasswordInput = document.getElementById('newPassword');
-    const confirmPasswordInput = document.getElementById('confirmPassword');
-    const resetButton = document.getElementById('resetButton');
-    const errorMessage = document.getElementById('errorMessage');
-    const successMessage = document.getElementById('successMessage');
-    const passwordMatch = document.getElementById('passwordMatch');
+    const form = document.getElementById("resetForm");
+    const message = document.getElementById("message");
 
-    if (!oobCode) {
-      showError('Invalid or expired reset link. Please request a new password reset.');
-    }
-
-    confirmPasswordInput.addEventListener('input', checkPasswordMatch);
-    newPasswordInput.addEventListener('input', checkPasswordMatch);
-    
-    document.getElementById('resetForm').addEventListener('submit', resetPassword);
-
-    function checkPasswordMatch() {
-      const password = newPasswordInput.value;
-      const confirm = confirmPasswordInput.value;
-      
-      if (confirm.length === 0) {
-        passwordMatch.style.display = 'none';
-        return;
-      }
-      
-      if (password === confirm) {
-        passwordMatch.textContent = '✅ Passwords match';
-        passwordMatch.className = 'password-match match-valid';
-        passwordMatch.style.display = 'block';
-      } else {
-        passwordMatch.textContent = '❌ Passwords do not match';
-        passwordMatch.className = 'password-match match-invalid';
-        passwordMatch.style.display = 'block';
-      }
-    }
-
-    function togglePassword(inputId) {
-      const input = document.getElementById(inputId);
-      const toggle = input.parentNode.querySelector('.password-toggle');
-      
-      if (input.type === 'password') {
-        input.type = 'text';
-        toggle.textContent = '🔒';
-      } else {
-        input.type = 'password';
-        toggle.textContent = '👁️';
-      }
-    }
-
-    function showError(message) {
-      errorMessage.textContent = message;
-      errorMessage.style.display = 'block';
-      successMessage.style.display = 'none';
-    }
-
-    function showSuccess(message) {
-      successMessage.textContent = message;
-      successMessage.style.display = 'block';
-      errorMessage.style.display = 'none';
-    }
-
-    function setLoading(isLoading) {
-      const buttonText = document.getElementById('buttonText');
-      const buttonLoading = document.getElementById('buttonLoading');
-      
-      if (isLoading) {
-        resetButton.disabled = true;
-        buttonText.style.display = 'none';
-        buttonLoading.style.display = 'inline-block';
-      } else {
-        resetButton.disabled = false;
-        buttonText.style.display = 'inline-block';
-        buttonLoading.style.display = 'none';
-      }
-    }
-
-    async function resetPassword(event) {
-      event.preventDefault();
-      
-      if (!oobCode) {
-        showError('Invalid reset link. Please request a new password reset.');
-        return;
-      }
-
-      const newPassword = newPasswordInput.value;
-      const confirmPassword = confirmPasswordInput.value;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const newPassword = document.getElementById("newPassword").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
 
       if (newPassword !== confirmPassword) {
-        showError('Passwords do not match. Please make sure both passwords are the same.');
+        message.innerText = "❌ Passwords do not match";
         return;
       }
-
-      if (newPassword.length === 0) {
-        showError('Please enter a new password.');
-        return;
-      }
-
-      setLoading(true);
 
       try {
-        const email = await auth.verifyPasswordResetCode(oobCode);
+        // ✅ Verify the reset code is valid
+        const email = await verifyPasswordResetCode(auth, oobCode);
+        console.log("Resetting password for:", email);
+
+        // ✅ Confirm the reset with new password
+        await confirmPasswordReset(auth, oobCode, newPassword);
+        message.innerText = "✅ Password reset successful! You can now log in.";
         
-        await auth.confirmPasswordReset(oobCode, newPassword);
-        
-        showSuccess('Password reset successful! You can now log in with your new password.');
-        
-        newPasswordInput.value = '';
-        confirmPasswordInput.value = '';
-        passwordMatch.style.display = 'none';
-        
-        setTimeout(() => {
-          window.location.href = '/farm/login';
-        }, 3000);
-        
+        // Optional redirect
+        setTimeout(() => window.location.href = "/farm/login", 3000);
+
       } catch (error) {
-        console.error('Password reset error:', error);
-        
-        let errorMessage = 'An error occurred while resetting your password. ';
-        
-        switch (error.code) {
-          case 'auth/expired-action-code':
-            errorMessage += 'The reset link has expired. Please request a new one.';
-            break;
-          case 'auth/invalid-action-code':
-            errorMessage += 'The reset link is invalid. Please request a new one.';
-            break;
-          case 'auth/user-disabled':
-            errorMessage += 'This account has been disabled.';
-            break;
-          case 'auth/user-not-found':
-            errorMessage += 'No account found with this email.';
-            break;
-          case 'auth/weak-password':
-            errorMessage += 'Password is too weak. Please choose a stronger password.';
-            break;
-          default:
-            errorMessage += 'Please try again or request a new reset link.';
-        }
-        
-        showError(errorMessage);
-      } finally {
-        setLoading(false);
+        console.error(error);
+        message.innerText = "❌ Error: " + error.message;
       }
-    }
+    });
   </script>
 </body>
 </html>
