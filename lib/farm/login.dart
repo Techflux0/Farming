@@ -422,7 +422,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
               'Sign in to continue to your account',
               style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
             // Error Message
             if (_errorMessage != null)
@@ -451,7 +451,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
 
             // Login Form Card
             Card(
-              elevation: 4,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -570,7 +570,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 15),
 
                       // Login Button
                       SizedBox(
@@ -609,7 +609,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       // Divider
                       Row(
@@ -638,7 +638,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       // Google Sign In Button
                       SizedBox(
@@ -675,7 +675,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       // Sign Up Link
                       Row(
@@ -699,19 +699,20 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 5),
+
+                      // Footer Text (moved inside the card)
+                      const Text(
+                        'By continuing, you agree to our Terms of Service\nand Privacy Policy',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-
-            // Footer Text
-            const Text(
-              'By continuing, you agree to our Terms of Service\nand Privacy Policy',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
+            const SizedBox(height: 10),
           ],
         ),
       ),
