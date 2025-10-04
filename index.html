@@ -307,12 +307,12 @@
       const confirmPassword = document.getElementById("confirmPassword").value;
 
       if (newPassword !== confirmPassword) {
-        showMessage("❌ Passwords do not match");
+        showMessage("Passwords do not match");
         return;
       }
 
       if (newPassword.length < 6) {
-        showMessage("❌ Password must be at least 6 characters long");
+        showMessage("Password must be at least 6 characters long");
         return;
       }
 
@@ -325,7 +325,7 @@
 
         await confirmPasswordReset(auth, oobCode, newPassword);
         
-        showMessage("✅ Password reset successful! You can now log in.", false);
+        showMessage("Password reset successful! You can now log in.", false);
         
         document.getElementById("newPassword").value = '';
         document.getElementById("confirmPassword").value = '';
@@ -364,7 +364,7 @@
 
     // Check if reset code is present on page load
     if (!oobCode) {
-      showMessage('❌ Invalid or expired reset link. Please request a new password reset.');
+      showMessage('Invalid or expired reset link. Please request a new password reset.');
     }
   </script>
 </body>

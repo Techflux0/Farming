@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'updater.dart';
 
 class GoatFarmLandingPage extends StatefulWidget {
   const GoatFarmLandingPage({super.key});
@@ -30,160 +31,176 @@ class _GoatFarmLandingPageState extends State<GoatFarmLandingPage> {
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 200,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue, Colors.lightBlue],
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 20,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 200,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.blue, Colors.lightBlue],
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 20,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Icon(Icons.pets, size: 50, color: Colors.white),
-                          SizedBox(height: 8),
-                          Text(
-                            'Farm Pro',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          const Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.pets, size: 50, color: Colors.white),
+                              SizedBox(height: 8),
+                              Text(
+                                'Farm Pro',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                'Goat farming made simple',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            'Goat farming made simple',
-                            style: TextStyle(fontSize: 14, color: Colors.white),
+                          const Spacer(),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              _buildPillButton(
+                                text: 'Sign Up',
+                                onPressed: () => _navigateToSignup(context),
+                                isFilled: true,
+                                width: 150,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildPillButton(
+                                text: 'Login',
+                                onPressed: () => _navigateToLogin(context),
+                                isFilled: false,
+                                width: 150,
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      const Spacer(),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          _buildPillButton(
-                            text: 'Sign Up',
-                            onPressed: () => _navigateToSignup(context),
-                            isFilled: true,
-                            width: 150,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildPillButton(
-                            text: 'Login',
-                            onPressed: () => _navigateToLogin(context),
-                            isFilled: false,
-                            width: 150,
-                          ),
-                        ],
+                    ),
+                  ),
+                ),
+              ),
+
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isSmallScreen ? 2 : 4,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1,
+                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final features = [
+                      FeatureItem(
+                        icon: Icons.monitor_heart,
+                        title: "Health",
+                        description: "Track vitals & symptoms",
+                        color: Colors.red[400]!,
+                      ),
+                      FeatureItem(
+                        icon: Icons.family_restroom,
+                        title: "Breeding",
+                        description: "Heat cycles & pregnancies",
+                        color: Colors.pink[400]!,
+                      ),
+                      FeatureItem(
+                        icon: Icons.local_drink,
+                        title: "Milk",
+                        description: "Production analytics",
+                        color: Colors.purple[400]!,
+                      ),
+                      FeatureItem(
+                        icon: Icons.attach_money,
+                        title: "Finance",
+                        description: "Costs & profits",
+                        color: Colors.lightBlue[400]!,
+                      ),
+                    ];
+                    return Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.lightBlue[100]!,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: _buildCompactFeatureCard(features[index]),
+                    );
+                  }, childCount: 4),
+                ),
+              ),
+
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _buildCompactFAQItem(faqs[index]),
+                    );
+                  }, childCount: faqs.length),
+                ),
+              ),
+
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  16,
+                  16,
+                  16,
+                  32,
+                ), // Extra bottom padding
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Ready to improve your goat farm?",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 30),
+                        child: _buildPillButton(
+                          text: 'Start Free Trial',
+                          onPressed: () => _navigateToSignup(context),
+                          isFilled: true,
+                          width: double.infinity,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
+            ],
           ),
 
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverGrid(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: isSmallScreen ? 2 : 4,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1,
-              ),
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final features = [
-                  FeatureItem(
-                    icon: Icons.monitor_heart,
-                    title: "Health",
-                    description: "Track vitals & symptoms",
-                    color: Colors.red[400]!,
-                  ),
-                  FeatureItem(
-                    icon: Icons.family_restroom,
-                    title: "Breeding",
-                    description: "Heat cycles & pregnancies",
-                    color: Colors.pink[400]!,
-                  ),
-                  FeatureItem(
-                    icon: Icons.local_drink,
-                    title: "Milk",
-                    description: "Production analytics",
-                    color: Colors.purple[400]!,
-                  ),
-                  FeatureItem(
-                    icon: Icons.attach_money,
-                    title: "Finance",
-                    description: "Costs & profits",
-                    color: Colors.lightBlue[400]!,
-                  ),
-                ];
-                return Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.lightBlue[100]!, width: 1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: _buildCompactFeatureCard(features[index]),
-                );
-              }, childCount: 4),
-            ),
-          ),
-
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _buildCompactFAQItem(faqs[index]),
-                );
-              }, childCount: faqs.length),
-            ),
-          ),
-
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
-              32,
-            ), // Extra bottom padding
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  const Text(
-                    "Ready to improve your goat farm?",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 30),
-                    child: _buildPillButton(
-                      text: 'Start Free Trial',
-                      onPressed: () => _navigateToSignup(context),
-                      isFilled: true,
-                      width: double.infinity,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // Your existing UpdateChecker - will automatically check and show dialog if update available
+          const UpdateChecker(),
         ],
       ),
     );

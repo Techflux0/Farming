@@ -35,7 +35,7 @@ class MyHomePage extends StatelessWidget {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
-            Text('Current Version: 1.0.071-Beta'),
+            Text('Current Version: 2.0.0-Beta'),
             SizedBox(height: 40),
             UpdateChecker(),
           ],
@@ -53,7 +53,7 @@ class UpdateChecker extends StatefulWidget {
 }
 
 class _UpdateCheckerState extends State<UpdateChecker> {
-  final String currentVersion = "1.0.071-Beta";
+  final String currentVersion = "2.0.0-Beta";
   final String versionUrl = "https://pastebin.com/raw/RGqzqJai";
   final String updateLinkUrl = "https://pastebin.com/raw/n5d1RzeX";
 
